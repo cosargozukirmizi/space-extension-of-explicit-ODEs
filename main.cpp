@@ -3,11 +3,11 @@
 
 using namespace std;
 
-void extendSpace (vector<int> equationVector);
+void extendSpace (const vector<int> equationVector);
 
 int main ()
 {
-  vector<int> vanderPol
+  const vector<int> vanderPol
   {
   1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 2, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0};
 
@@ -16,7 +16,7 @@ int main ()
   extendSpace (vanderPol);
   cout << "--------------------------------\n\n";
 
-  vector<int> quarticAnharmonicOscillator
+  const vector<int> quarticAnharmonicOscillator
   {
   1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 2, 0};
 
@@ -25,7 +25,7 @@ int main ()
   extendSpace (quarticAnharmonicOscillator);
   cout << "--------------------------------\n\n";
 
-  vector<int> highPowers
+  const vector<int> highPowers
   {
   1, 0, 50, 50, 50, 50, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 2, 0};
 
@@ -38,7 +38,7 @@ int main ()
 }
 
 
-void extendSpace (vector<int> equationVector)
+void extendSpace (const vector<int> equationVector)
 {
 
   vector<int> runVec = equationVector;
@@ -102,7 +102,6 @@ void extendSpace (vector<int> equationVector)
 		temp2 =
 		  equationVector[i + 3] + equationVector[i + 5] +
 		  rightHandSide[1] - 1;
-
             }
             else
             {
