@@ -3,16 +3,45 @@
 
 using namespace std;
 
-int
-main ()
-{
+void extendSpace (vector<int> equationVector);
 
-  vector < int >equationVector
+int main ()
+{
+  vector<int> vanderPol
   {
   1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 2, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0};
 
+  cout << "\nThe space extension for van der Pol ODE is";
+  cout << endl;
+  extendSpace (vanderPol);
+  cout << "--------------------------------\n\n";
 
-  vector < int >runVec = equationVector;
+  vector<int> quarticAnharmonicOscillator
+  {
+  1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 2, 0};
+
+  cout << "\nThe space extension for classical quartic anharmonic oscillator ODE is";
+  cout << endl;
+  extendSpace (quarticAnharmonicOscillator);
+  cout << "--------------------------------\n\n";
+
+  vector<int> highPowers
+  {
+  1, 0, 50, 50, 50, 50, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 2, 0};
+
+  cout << "\nThe space extension for ODE with high powers is";
+  cout << endl;
+  extendSpace (highPowers);
+  cout << "--------------------------------\n\n";
+
+  return 0;
+}
+
+
+void extendSpace (vector<int> equationVector)
+{
+
+  vector<int> runVec = equationVector;
 
   bool appears = 0;
 
@@ -23,10 +52,9 @@ main ()
   int temp4 = 0;
   int temp5 = 0;
   int temp6 = 0;
+  int numEqs = 2;  // start with two unknowns
 
-  vector < int >rightHandSide
-  {
-  0, 0};
+  vector<int> rightHandSide{0, 0};
 
   while (i < runVec.size ())
   {
@@ -37,8 +65,7 @@ main ()
 
       for (int i = 0; i < runVec.size (); i += 6)
       {
-	if (rightHandSide[0] == runVec[i]
-	    && rightHandSide[1] == runVec[i + 1])
+	if (rightHandSide[0] == runVec[i] && rightHandSide[1] == runVec[i + 1])
 	{
 	  appears = 1;
 	  break;
@@ -47,60 +74,28 @@ main ()
 
       if (appears == 0)
       {
+        numEqs++;
 	if (rightHandSide[0] == 0 && rightHandSide[1] == 0)
 	{
 	  runVec.insert (runVec.end (),
-	                 {
-	                 0, 0, 0, 0, 0, 0}
-	  );
+	                 {0, 0, 0, 0, 0, 0});
 	}
 	else
 	{
 
 	  for (int i = 0; i < equationVector.size (); i += 6)
 	  {
-	    if (equationVector[i] == 1 && equationVector[i + 1] == 0)
+	    if (equationVector[i] == 1 && equationVector[i + 1] == 0 && rightHandSide[0] > 0)
 	    {
-	      if (rightHandSide[0] > 0)
-	      {
 		temp =
 		  equationVector[i + 2] + equationVector[i + 4] +
 		  rightHandSide[0] - 1;
 		temp2 =
 		  equationVector[i + 3] + equationVector[i + 5] +
 		  rightHandSide[1];
-
-		if (temp == temp2)
-		{
-		  temp3 = temp / 2;
-		  temp5 = temp - temp3;
-		  runVec.push_back (rightHandSide[0]);
-		  runVec.push_back (rightHandSide[1]);
-		  runVec.push_back (temp3);
-		  runVec.push_back (temp5);
-		  runVec.push_back (temp5);
-		  runVec.push_back (temp3);
-		}
-		else
-		{
-		  temp3 = temp / 2;
-		  temp5 = temp - temp3;
-		  temp4 = temp2 / 2;
-		  temp6 = temp2 - temp4;
-		  runVec.push_back (rightHandSide[0]);
-		  runVec.push_back (rightHandSide[1]);
-		  runVec.push_back (temp3);
-		  runVec.push_back (temp4);
-		  runVec.push_back (temp5);
-		  runVec.push_back (temp6);
-		}
-	      }
-
-	    }
-	    else if (equationVector[i] == 0 && equationVector[i + 1] == 1)
-	    {
-	      if (rightHandSide[1] > 0)
-	      {
+            }
+	    else if (equationVector[i] == 0 && equationVector[i + 1] == 1 && rightHandSide[1] > 0)
+            {
 		temp =
 		  equationVector[i + 2] + equationVector[i + 4] +
 		  rightHandSide[0];
@@ -108,47 +103,45 @@ main ()
 		  equationVector[i + 3] + equationVector[i + 5] +
 		  rightHandSide[1] - 1;
 
-		if (temp == temp2)
-		{
-		  temp3 = temp / 2;
-		  temp5 = temp - temp3;
-		  runVec.push_back (rightHandSide[0]);
-		  runVec.push_back (rightHandSide[1]);
-		  runVec.push_back (temp3);
-		  runVec.push_back (temp5);
-		  runVec.push_back (temp5);
-		  runVec.push_back (temp3);
-		}
-		else
-		{
-		  temp3 = temp / 2;
-		  temp5 = temp - temp3;
-		  temp4 = temp2 / 2;
-		  temp6 = temp2 - temp4;
-		  runVec.push_back (rightHandSide[0]);
-		  runVec.push_back (rightHandSide[1]);
-		  runVec.push_back (temp3);
-		  runVec.push_back (temp4);
-		  runVec.push_back (temp5);
-		  runVec.push_back (temp6);
-		}
-	      }
-	    }
+            }
+            else
+            {
+                continue;
+            }
+
+            if (temp == 1 && temp2 == 1)
+            {
+		runVec.push_back (rightHandSide[0]);
+		runVec.push_back (rightHandSide[1]);
+		runVec.push_back (0);
+		runVec.push_back (1);
+		runVec.push_back (1);
+		runVec.push_back (0);
+            }
 	    else
 	    {
-	      cout << "If the program gets here, there is sth wrong." << endl;
+		temp3 = temp / 2;
+		temp5 = temp - temp3;
+		temp4 = temp2 / 2;
+		temp6 = temp2 - temp4;
+		runVec.push_back (rightHandSide[0]);
+		runVec.push_back (rightHandSide[1]);
+		runVec.push_back (temp3);
+		runVec.push_back (temp4);
+		runVec.push_back (temp5);
+		runVec.push_back (temp6);
 	    }
-
-	  }
-	}
-
+          }
+        }
       }
-      appears = 0;
 
+      appears = 0;
     }
+
     i += 6;
   }
-  for (int i = 0; i < runVec.size (); i++)
+
+  for (auto i = 0; i < runVec.size (); i++)
   {
     cout << runVec[i] << ' ';
 
@@ -156,7 +149,9 @@ main ()
       cout << endl;
   }
 
-  return 0;
+  cout << "There are " << numEqs << " equations.\n";
+
+  return;
 }
 
 // END OF PROGRAM
