@@ -68,12 +68,12 @@ int main ()
     1, 0, 0,  0, 0, 0,  0, 1, 0,
     1, 0, 0,  1, 0, 0,  1, 1, 0,
     1, 0, 0,  0, 0, 0,  1, 0, 0,
-    0, 1, 0,  0, 0, 1,  1, 0, 0,
+    0, 1, 0,  0, 1, 0,  1, 0, 1,
     0, 1, 0,  0, 0, 0,  1, 0, 0,
     0, 1, 0,  1, 0, 0,  2, 0, 0,
     0, 1, 0,  0, 0, 0,  0, 1, 0,
     0, 0, 1,  0, 0, 0,  0, 0, 1,
-    0, 0, 1,  0, 1, 0,  1, 0, 1
+    0, 0, 1,  0, 0, 1,  1, 1, 0
   };
 
   cout << "\n The space extension for Rabinovich-Fabrikant ODE is";
@@ -85,7 +85,7 @@ int main ()
 }
 
 
-void extendSpace (vector<int> equationVector, const int stEq)
+void extendSpace (const vector<int> equationVector, const int stEq)
 {
 
   vector<int> runVec = equationVector;
@@ -93,12 +93,6 @@ void extendSpace (vector<int> equationVector, const int stEq)
   bool appears = 0;
 
   int i = 0;
-  int temp = 0;
-  int temp2 = 0;
-  int temp3 = 0;
-  int temp4 = 0;
-  int temp5 = 0;
-  int temp6 = 0;
   int numEqs = stEq;
 
   vector<int> rightHandSide (stEq, 0);
@@ -136,8 +130,8 @@ void extendSpace (vector<int> equationVector, const int stEq)
         {
           for (int i = 0; i < equationVector.size (); i += 3*stEq)
           {
-            std::vector<int>::iterator it;
-            it = std::find (equationVector.begin () + i, equationVector.begin () + i + 3*stEq, 1);
+            vector<int>::const_iterator it;
+            it = find (equationVector.begin () + i, equationVector.begin () + i + 3*stEq, 1);
             int oneInd = (it - equationVector.begin ());
 
             bool x = 0;
@@ -153,7 +147,7 @@ void extendSpace (vector<int> equationVector, const int stEq)
                   myTemp[k] =
                     equationVector[i + stEq + k] + equationVector[i + stEq + stEq + k] +
                     rightHandSide[k];
-                  if (j==k)
+                  if (j == k)
                   {
                     myTemp[k] -= 1;
                   }
