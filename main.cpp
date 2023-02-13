@@ -6,8 +6,8 @@
 
 using namespace std;
 
-void extendSpace (const vector<int> equationVector, const int stEq, vector<mpq_class> myCoeffs);
-void toLatex (const vector<int> equationVector, const int stEq, vector<mpq_class> myCoeffs);
+void extendSpace (const vector<int> &equationVector, const int stEq, vector<mpq_class> myCoeffs);
+void toLatex (const vector<int> &equationVector, const int stEq, const vector<mpq_class> &myCoeffs);
 
 int main ()
 {
@@ -116,7 +116,7 @@ int main ()
 }
 
 
-void extendSpace (const vector<int> equationVector, const int stEq, vector<mpq_class> myCoeffs)
+void extendSpace (const vector<int> &equationVector, const int stEq, vector<mpq_class> myCoeffs)
 {
 
   vector<int> runVec = equationVector;
@@ -228,20 +228,6 @@ void extendSpace (const vector<int> equationVector, const int stEq, vector<mpq_c
     i += 3*stEq;
   }
 
-/*
-  for (auto i = 0; i < runVec.size (); i++)
-  {
-    cout << setw(3);
-    cout << runVec[i];
-
-    if (i % stEq == stEq-1)
-      cout << ' ';
-
-    if (i % (3*stEq) == (3*stEq-1))
-      cout << endl;
-  }
-*/
-
   cout << "\nThe original ODE set is " << endl;
   toLatex (equationVector, stEq, myCoeffs);
 
@@ -253,7 +239,7 @@ void extendSpace (const vector<int> equationVector, const int stEq, vector<mpq_c
   return;
 }
 
-void toLatex (const vector<int> equationVector, const int stEq, vector<mpq_class> myCoeffs)
+void toLatex (const vector<int> &equationVector, const int stEq, const vector<mpq_class> &myCoeffs)
 {
   cout << endl;
   cout << "\\begin{eqnarray}" << endl;
@@ -264,28 +250,18 @@ void toLatex (const vector<int> equationVector, const int stEq, vector<mpq_class
   {
     bool same = 0;
     leftHandSide.assign(equationVector.begin()+i, equationVector.begin()+i+stEq-1); 
-    if ( i != 0 )
+    if ( i != 0 && leftHandSide == prevLeftHandSide )
     {
-      if ( leftHandSide == prevLeftHandSide )
-      {
-        same = 1;
-      }
+      same = 1;
     }
 
-    if (same == 1)
-    {
-      // do nothing
-    }
-    else
+
+    if (!same)
     {
       if ( i != 0 )
       {
          cout << "\\\\" << endl;
       }
-    }
-
-   if (same == 0)
-   {
       cout << "  u^{(";
       for (auto j = 0; j < stEq; j++)
       {
@@ -299,7 +275,6 @@ void toLatex (const vector<int> equationVector, const int stEq, vector<mpq_class
    }
 
 
-    mpq_class madePositive(0);
     mpq_class myZero(0);
     bool isPos = 1;
 
@@ -310,22 +285,18 @@ void toLatex (const vector<int> equationVector, const int stEq, vector<mpq_class
 
 
     mpq_class coeffToPrint = myCoeffs[i/(3*stEq)];
-    if ( (isPos) )
+    if ( same )
     {
-      if ( same  )
+      if ( isPos )
       {
-        cout << " \\nonumber \\\\" << endl << " &+& " ;
+        cout << " \\nonumber \\\\" << endl << " &+& ";
+      }
+      else
+      {
+        cout << " \\nonumber \\\\" << endl << " &-& ";
+        coeffToPrint = -coeffToPrint;
       }
     }
-    else
-    {
-       if ( same )
-       { 
-         cout << " \\nonumber \\\\" << endl << " &-& " ;
-         coeffToPrint = -coeffToPrint;
-       }
-    }
-
     cout << coeffToPrint << "\\,";
 
     cout << " u^{(";
