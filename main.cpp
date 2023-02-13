@@ -1,11 +1,13 @@
 #include <iostream>
 #include <vector>
+#include <gmpxx.h>
 #include <iomanip>
 #include <algorithm>
 
 using namespace std;
 
-void extendSpace (const vector<int> equationVector, const int stEq);
+void extendSpace (const vector<int> equationVector, const int stEq, vector<mpq_class> myCoeffs);
+void toLatex (const vector<int> equationVector, const int stEq, vector<mpq_class> myCoeffs);
 
 int main ()
 {
@@ -17,10 +19,16 @@ int main ()
     0, 1,  0, 0,  1, 0
   };
 
-  cout << "\n The space extension for van der Pol ODE is";
+  vector<mpq_class> vanderPolCoeffs{
+   mpq_class(1), mpq_class(-1,3), mpq_class(-1), mpq_class(1)
+  };
+
+
+  cout << "\n The space extension for van der Pol ODE:";
   cout << endl;
-  extendSpace (vanderPol, 2);
+  extendSpace (vanderPol, 2, vanderPolCoeffs);
   cout << "--------------------------------\n\n";
+
 
   const vector<int> quarticAnharmonicOscillator
   {
@@ -29,10 +37,16 @@ int main ()
     0, 1,  1, 0,  2, 0
   };
 
-  cout << "\n The space extension for classical quartic anharmonic oscillator ODE is";
+  vector<mpq_class> quarticAnharmonicOscillatorCoeffs{
+   mpq_class(1), mpq_class(-1), mpq_class(-1)
+  };   // mu is 1, k1 is 1, k2 is 1
+
+
+  cout << "\n The space extension for classical quartic anharmonic oscillator ODE:";
   cout << endl;
-  extendSpace (quarticAnharmonicOscillator, 2);
+  extendSpace (quarticAnharmonicOscillator, 2, quarticAnharmonicOscillatorCoeffs);
   cout << "--------------------------------\n\n";
+
 
   const vector<int> highPowers
   {
@@ -41,10 +55,16 @@ int main ()
     0, 1,   1,  0,   2,  0
   };
 
-  cout << "\n The space extension for ODE with high powers is";
+  vector<mpq_class> highPowersCoeffs{
+   mpq_class(1), mpq_class(1), mpq_class(1)
+  };
+
+
+  cout << "\n The space extension for ODE with high powers:";
   cout << endl;
-  extendSpace (highPowers, 2);
+  extendSpace (highPowers, 2, highPowersCoeffs);
   cout << "--------------------------------\n\n";
+
 
   const vector<int> henonHeiles
   {
@@ -57,10 +77,16 @@ int main ()
     0, 0, 0, 1,  0, 0, 1, 0,  0, 0, 1, 0
   };
 
-  cout << "\n The space extension for Henon-Heiles ODE is";
+  vector<mpq_class> henonHeilesCoeffs{
+   mpq_class(1), mpq_class(-1), mpq_class(-2), mpq_class(1), mpq_class(-1), mpq_class(-1), mpq_class(1)
+  }; // lambda is 1
+
+
+  cout << "\n The space extension for Henon-Heiles ODE:";
   cout << endl;
-  extendSpace (henonHeiles, 4);
+  extendSpace (henonHeiles, 4, henonHeilesCoeffs);
   cout << "--------------------------------\n\n";
+
 
   const vector<int> rabinovichFabrikant
   {
@@ -76,16 +102,21 @@ int main ()
     0, 0, 1,  0, 1, 0,  1, 0, 1
   };
 
-  cout << "\n The space extension for Rabinovich-Fabrikant ODE is";
+  vector<mpq_class> rabinovichFabrikantCoeffs{
+   mpq_class(1), mpq_class(-1), mpq_class(1), mpq_class(1), mpq_class(3), mpq_class(1), mpq_class(-1), mpq_class(1), mpq_class(-2), mpq_class(-2)
+  }; // gamma is 1, alpha is 1
+
+  cout << "\n The space extension for Rabinovich-Fabrikant ODE:";
   cout << endl;
-  extendSpace (rabinovichFabrikant, 3);
+  extendSpace (rabinovichFabrikant, 3, rabinovichFabrikantCoeffs);
   cout << "--------------------------------\n\n";
+
 
   return 0;
 }
 
 
-void extendSpace (const vector<int> equationVector, const int stEq)
+void extendSpace (const vector<int> equationVector, const int stEq, vector<mpq_class> myCoeffs)
 {
 
   vector<int> runVec = equationVector;
@@ -125,6 +156,7 @@ void extendSpace (const vector<int> equationVector, const int stEq)
         if (rightHandSide == allZero)
         {
           runVec.insert (runVec.end (), zeroEntry.begin(), zeroEntry.end() );
+          myCoeffs.push_back(mpq_class(0));
         }
         else
         {
@@ -149,6 +181,7 @@ void extendSpace (const vector<int> equationVector, const int stEq)
                     rightHandSide[k];
                   if (j == k)
                   {
+                    myCoeffs.push_back(rightHandSide[j] * myCoeffs[i/(3*stEq)]);
                     myTemp[k] -= 1;
                   }
                 }
@@ -168,8 +201,9 @@ void extendSpace (const vector<int> equationVector, const int stEq)
             for (int i = 0; i < myTemp.size (); i++)
             {
               if (myTemp[i] == 1)
+              {
                 oneCount++;
-
+              }
               if (myTemp[i] != 1 || (myTemp[i]==1 && (oneCount%2==1)))
               {
                 lefts.push_back(myTemp[i] / 2);
@@ -188,13 +222,13 @@ void extendSpace (const vector<int> equationVector, const int stEq)
           }
         }
       }
-
       appears = 0;
     }
 
     i += 3*stEq;
   }
 
+/*
   for (auto i = 0; i < runVec.size (); i++)
   {
     cout << setw(3);
@@ -206,10 +240,120 @@ void extendSpace (const vector<int> equationVector, const int stEq)
     if (i % (3*stEq) == (3*stEq-1))
       cout << endl;
   }
+*/
 
-  cout << " There are " << numEqs << " equations.\n";
+  cout << "\nThe original ODE set is " << endl;
+  toLatex (equationVector, stEq, myCoeffs);
+
+  cout << "\nThe new ODE set is " << endl;
+  toLatex (runVec, stEq, myCoeffs);
+
+  cout << endl;
 
   return;
 }
+
+void toLatex (const vector<int> equationVector, const int stEq, vector<mpq_class> myCoeffs)
+{
+  cout << endl;
+  cout << "\\begin{eqnarray}" << endl;
+
+  vector<int> prevLeftHandSide(stEq);
+  vector<int> leftHandSide(stEq);
+  for (auto i = 0; i < equationVector.size(); i+=3*stEq)
+  {
+    bool same = 0;
+    leftHandSide.assign(equationVector.begin()+i, equationVector.begin()+i+stEq-1); 
+    if ( i != 0 )
+    {
+      if ( leftHandSide == prevLeftHandSide )
+      {
+        same = 1;
+      }
+    }
+
+    if (same == 1)
+    {
+      // do nothing
+    }
+    else
+    {
+      if ( i != 0 )
+      {
+         cout << "\\\\" << endl;
+      }
+    }
+
+   if (same == 0)
+   {
+      cout << "  u^{(";
+      for (auto j = 0; j < stEq; j++)
+      {
+        if (j != 0)
+        {
+          cout << ",";
+        }
+        cout << equationVector[i+j];
+      }
+      cout << ")} &=& ";
+   }
+
+
+    mpq_class madePositive(0);
+    mpq_class myZero(0);
+    bool isPos = 1;
+
+    if ( myCoeffs[i/(3*stEq)] < myZero )
+    {
+       isPos = 0;
+    }
+
+
+    mpq_class coeffToPrint = myCoeffs[i/(3*stEq)];
+    if ( (isPos) )
+    {
+      if ( same  )
+      {
+        cout << " \\nonumber \\\\" << endl << " &+& " ;
+      }
+    }
+    else
+    {
+       if ( same )
+       { 
+         cout << " \\nonumber \\\\" << endl << " &-& " ;
+         coeffToPrint = -coeffToPrint;
+       }
+    }
+
+    cout << coeffToPrint << "\\,";
+
+    cout << " u^{(";
+    for (auto k = i + stEq; k < i + stEq + stEq; k++)
+    {
+      if (k != i + stEq)
+      {
+        cout << ",";
+      }
+      cout << equationVector[k];
+    }
+    cout << ")}";
+
+    cout << " u^{(";
+    for (auto k = i + stEq + stEq; k < i + stEq + stEq + stEq; k++)
+    {
+      if (k != i + stEq + stEq)
+      {
+        cout << ",";
+      }
+      cout << equationVector[k];
+    }
+    cout << ")}";
+
+    prevLeftHandSide = leftHandSide;
+  }
+  cout << endl << "\\end{eqnarray}" << endl;
+}
+
 
 // END OF PROGRAM
