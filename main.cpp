@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <map>
 #include <gmpxx.h>
 #include <iomanip>
 #include <algorithm>
@@ -120,6 +121,7 @@ void extendSpace (const vector<int> &equationVector, const int stEq, vector<mpq_
 {
 
   vector<int> runVec = equationVector;
+  map<vector<int>, int> myMap;
 
   bool appears = 0;
 
@@ -127,6 +129,13 @@ void extendSpace (const vector<int> &equationVector, const int stEq, vector<mpq_
   int numEqs = stEq;
 
   vector<int> rightHandSide (stEq, 0);
+  vector<int> tempLeft (stEq, 0);
+
+  for (auto i = 0; i < runVec.size (); i+=3*stEq)
+  {
+    tempLeft.assign(equationVector.begin()+i, equationVector.begin()+i+stEq);
+    myMap.insert({tempLeft, 0});
+  }
 
   while (i < runVec.size ())
   {
@@ -136,6 +145,11 @@ void extendSpace (const vector<int> &equationVector, const int stEq, vector<mpq_
       {
         rightHandSide[k] = runVec[i + j + k];
       }
+      if (myMap.find(rightHandSide) == myMap.end())
+      {
+         myMap.insert({rightHandSide, 0});
+      }
+
       for (int i = 0; i < runVec.size (); i += 3 * stEq)
       {
         vector<int> subvector(stEq, 0);
@@ -236,6 +250,34 @@ void extendSpace (const vector<int> &equationVector, const int stEq, vector<mpq_
 
   cout << endl;
 
+  map<vector<int>, int> ::iterator myMapIterator;
+  vector<int> tempVec;
+
+
+  int myDummyVariable = 0;
+
+  for(myMapIterator=myMap.begin();myMapIterator !=myMap.end();++myMapIterator)
+  {
+    myMapIterator->second = myDummyVariable++;
+  }
+
+
+  for(myMapIterator=myMap.begin();myMapIterator !=myMap.end();++myMapIterator)
+  {
+    tempVec = myMapIterator->first;
+    cout << "[ ";
+
+    for (auto dummy : tempVec)
+      cout << dummy << " ";
+
+    cout << "]:";
+    cout << myMapIterator->second << ", " << endl;
+  }
+// for(const auto& elem : myMap)
+//  {
+//    std::cout << elem.first << " " << elem.second<< "\n";
+//  }
+
   return;
 }
 
@@ -246,13 +288,35 @@ void toLatex (const vector<int> &equationVector, const int stEq, const vector<mp
 
   vector<int> prevLeftHandSide(stEq);
   vector<int> leftHandSide(stEq);
+  vector<int> allZero(stEq,0);
+
   for (auto i = 0; i < equationVector.size(); i+=3*stEq)
   {
     bool same = 0;
-    leftHandSide.assign(equationVector.begin()+i, equationVector.begin()+i+stEq-1); 
+    leftHandSide.assign(equationVector.begin()+i, equationVector.begin()+i+stEq); 
     if ( i != 0 && leftHandSide == prevLeftHandSide )
     {
       same = 1;
+    }
+
+    if( !same && (leftHandSide == allZero) )
+    {
+      if ( i != 0 )
+      {
+         cout << "\\\\" << endl;
+      }
+      cout << "  \\dot{u}^{(";
+      for (auto j = 0; j < stEq; j++)
+      {
+        if (j != 0)
+        {
+          cout << ",";
+        }
+        cout << equationVector[i+j];
+      }
+      cout << ")} &=& 0";
+
+      continue;
     }
 
 
@@ -262,7 +326,7 @@ void toLatex (const vector<int> &equationVector, const int stEq, const vector<mp
       {
          cout << "\\\\" << endl;
       }
-      cout << "  u^{(";
+      cout << "  \\dot{u}^{(";
       for (auto j = 0; j < stEq; j++)
       {
         if (j != 0)
