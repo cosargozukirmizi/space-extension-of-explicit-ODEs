@@ -11,9 +11,9 @@ using namespace std;
 void extendSpace (const vector<int> &equationVector, const int stEq, vector<mpq_class> myCoeffs, const vector<mpq_class> initVal);
 void toLatex (const vector<int> &equationVector, const int stEq, const vector<mpq_class> &myCoeffs);
 void printAsTripleF(const vector<int> rowInd, const vector<int> colInd, const vector<mpq_class> myValue);
-void constructF(const vector<int> runVec, map<vector<int>, int> myMap, const vector<mpq_class> myCoeffs, const int stEq);
+void constructF(vector<int>& rowInd, vector<int>& colInd, vector<mpq_class>& myValue, const vector<int> runVec, map<vector<int>, int> myMap, const vector<mpq_class> myCoeffs, const int stEq);
 void condensedKroneckerProduct(vector<mpq_class>& result, const vector<mpq_class> a, const vector<mpq_class> b);
-void sparseMatTimesVec(vector<mpq_class>& result, const vector<int> rowInd, const vector<int> colInd, const vector<mpq_class> myCoeffs, const vector<mpq_class> x);
+void sparseMatTimesVec(vector<mpq_class>& result, const vector<int> rowInd, const vector<int> colInd, const vector<mpq_class> myCoeffs, const vector<mpq_class> x, const int resSize);
 void constructAugmentedInitVal(vector<mpq_class>& runInitVal, const vector<mpq_class> initVal, map<vector<int>, int> myMap);
 
 int main ()
@@ -60,7 +60,7 @@ int main ()
   extendSpace (quarticAnharmonicOscillator, 2, quarticAnharmonicOscillatorCoeffs, quarticAnharmonicOscillatorInitVal);
   cout << "--------------------------------\n\n";
 
-
+/*
   const vector<int> highPowers
   {
     1, 0,  50, 50,  50, 50,
@@ -81,7 +81,7 @@ int main ()
   extendSpace (highPowers, 2, highPowersCoeffs, highPowersInitVal);
   cout << "--------------------------------\n\n";
 
-
+*/
   const vector<int> henonHeiles
   {
     1, 0, 0, 0,  0, 0, 0, 0,  0, 1, 0, 0,
@@ -308,7 +308,91 @@ cout << "\nThe map for stacking the equations is " << endl;
 
   cout << "\n" << "Now we will try to construct F: " << endl;
 
-  constructF(runVec, myMap, myCoeffs, stEq);
+  vector<int> rowInd;
+  vector<int> colInd;
+  vector<mpq_class> myValue;
+
+  constructF(rowInd, colInd, myValue, runVec, myMap, myCoeffs, stEq);
+
+  vector<mpq_class> resOfKronProd(runInitVal.size()*(runInitVal.size()+1)/2, 0);
+  vector<mpq_class> resOfMatVecProd(runInitVal.size(), 0);
+  vector<mpq_class> resOfKronProdAccumulator(runInitVal.size()*(runInitVal.size()+1)/2, 0);
+
+  const int max_iter = 500;
+
+  vector<vector<mpq_class>> rho;
+
+  rho.push_back(runInitVal);
+
+  vector<mpq_class> solutionIngredient(runInitVal.size(), 0);
+  vector<mpq_class> solution(runInitVal.size(), 0);
+
+  const mpq_class aHalf(1,2);
+
+  int myconstant;
+
+  for(int j=0; j < max_iter; j++)
+  {
+    if( j%2 == 0)
+    {
+       for(int k=0; k<(j/2-1); k++)
+       {
+         condensedKroneckerProduct(resOfKronProd, rho[k], rho[j-k]);
+         std::transform (resOfKronProdAccumulator.begin(), resOfKronProdAccumulator.end(), resOfKronProd.begin(), resOfKronProdAccumulator.begin(), std::plus<mpq_class>());
+       }
+       condensedKroneckerProduct(resOfKronProd, rho[j/2], rho[j/2]);
+       std::transform(resOfKronProd.begin(), resOfKronProd.end(), resOfKronProd.begin(), [&aHalf](auto& c){return c*aHalf;});
+       std::transform (resOfKronProdAccumulator.begin(), resOfKronProdAccumulator.end(), resOfKronProd.begin(), resOfKronProdAccumulator.begin(), std::plus<mpq_class>());
+
+    }
+    else
+    {
+       for(int k=0; k<(j-1)/2; k++)
+       {
+         condensedKroneckerProduct(resOfKronProd, rho[k], rho[j-k]);
+         std::transform (resOfKronProdAccumulator.begin(), resOfKronProdAccumulator.end(), resOfKronProd.begin(), resOfKronProdAccumulator.begin(), std::plus<mpq_class>());
+       }
+    }
+
+    sparseMatTimesVec(resOfMatVecProd, rowInd, colInd, myValue, resOfKronProdAccumulator, runInitVal.size());
+    myconstant = j + 1;
+    std::transform(resOfMatVecProd.begin(), resOfMatVecProd.end(), resOfMatVecProd.begin(), [&myconstant](auto& c){return c*myconstant;});
+    rho.push_back(resOfMatVecProd);
+  }
+
+/*
+  const mpq_class t(1, 10);    // time value under consideration
+  mpq_class leftPart(1);
+
+
+  for(int i = 0; i < max_iter; i++)
+  {
+    solutionIngredient = rho[i];
+    std::transform(solutionIngredient.begin(), solutionIngredient.end(), solutionIngredient.begin(), [&leftPart](auto& c){return c*leftPart;});
+    std::transform (solution.begin(), solution.end(), solutionIngredient.begin(), solution.begin(), std::plus<mpq_class>());
+    leftPart = leftPart * t;
+  }
+*/
+
+  cout << "\nThe rho vectors are\n";
+  for(int i = 0; i < max_iter; i++)
+  {
+    cout << "\nrho[" << i << "] :\n";
+    for (auto element : rho[i])
+    {
+       cout << element << endl;
+    }
+  }
+
+/*
+  cout << "\nThe solution of the initial value problem at t=" << t <<  " is\n";
+
+  for (auto element : solution)
+  {
+    cout << element << " ";
+  }
+*/
+  cout << endl; 
 
   return;
 }
@@ -458,11 +542,8 @@ void constructAugmentedInitVal(vector<mpq_class>& runInitVal, const vector<mpq_c
   }
 }
 
-void constructF(const vector<int> runVec, map<vector<int>, int> myMap, const vector<mpq_class> myCoeffs, const int stEq)
+void constructF(vector<int>& rowInd, vector<int>& colInd, vector<mpq_class>& myValue, const vector<int> runVec, map<vector<int>, int> myMap, const vector<mpq_class> myCoeffs, const int stEq)
 {
-  vector<int> rowInd;
-  vector<int> colInd;
-  vector<mpq_class> myValue;
 
   vector<int> left(stEq);
   vector<int> middle(stEq);
@@ -522,13 +603,13 @@ void condensedKroneckerProduct(vector<mpq_class>& result, const vector<mpq_class
   return;
 }
 
-void sparseMatTimesVec(vector<mpq_class>& result, const vector<int> rowInd, const vector<int> colInd, const vector<mpq_class> myCoeffs, const vector<mpq_class> x)
+void sparseMatTimesVec(vector<mpq_class>& result, const vector<int> rowInd, const vector<int> colInd, const vector<mpq_class> myCoeffs, const vector<mpq_class> x, const int resSize)
 {
   assert(rowInd.size()==colInd.size());
   assert(rowInd.size()==myCoeffs.size());
 
   result.clear();
-  result.resize(x.size(),0);
+  result.resize(resSize,0);
 
   for(int i=0; i < rowInd.size(); i++)
   {
