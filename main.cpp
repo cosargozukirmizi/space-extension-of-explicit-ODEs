@@ -8,7 +8,7 @@
 
 using namespace std;
 
-void extendSpace (const vector<int> &equationVector, const int stEq, vector<mpq_class> myCoeffs, const vector<mpq_class> initVal);
+void extendSpace (const vector<int> &equationVector, vector<mpq_class> myCoeffs, const vector<mpq_class> initVal);
 void toLatex (const vector<int> &equationVector, const int stEq, const vector<mpq_class> &myCoeffs);
 void printAsTripleF(const vector<int> rowInd, const vector<int> colInd, const vector<mpq_class> myValue);
 void constructF(vector<int>& rowInd, vector<int>& colInd, vector<mpq_class>& myValue, const vector<int> runVec, map<vector<int>, int> myMap, const vector<mpq_class> myCoeffs, const int stEq);
@@ -36,7 +36,7 @@ int main ()
 
   cout << "\n The space extension for van der Pol ODE:";
   cout << endl;
-  extendSpace (vanderPol, 2, vanderPolCoeffs, vanderPolInitVal);
+  extendSpace (vanderPol, vanderPolCoeffs, vanderPolInitVal);
   cout << "--------------------------------\n\n";
 
 
@@ -57,31 +57,9 @@ int main ()
 
   cout << "\n The space extension for classical quartic anharmonic oscillator ODE:";
   cout << endl;
-  extendSpace (quarticAnharmonicOscillator, 2, quarticAnharmonicOscillatorCoeffs, quarticAnharmonicOscillatorInitVal);
+  extendSpace (quarticAnharmonicOscillator, quarticAnharmonicOscillatorCoeffs, quarticAnharmonicOscillatorInitVal);
   cout << "--------------------------------\n\n";
 
-/*
-  const vector<int> highPowers
-  {
-    1, 0,  50, 50,  50, 50,
-    0, 1,   0,  0,   1,  0,
-    0, 1,   1,  0,   2,  0
-  };
-
-  vector<mpq_class> highPowersCoeffs{
-   mpq_class(1), mpq_class(1), mpq_class(1)
-  };
-
-  vector<mpq_class> highPowersInitVal{
-   mpq_class(1,2),mpq_class(1,2)
-  };
-
-  cout << "\n The space extension for ODE with high powers:";
-  cout << endl;
-  extendSpace (highPowers, 2, highPowersCoeffs, highPowersInitVal);
-  cout << "--------------------------------\n\n";
-
-*/
   const vector<int> henonHeiles
   {
     1, 0, 0, 0,  0, 0, 0, 0,  0, 1, 0, 0,
@@ -103,7 +81,7 @@ int main ()
 
   cout << "\n The space extension for Henon-Heiles ODE:";
   cout << endl;
-  extendSpace (henonHeiles, 4, henonHeilesCoeffs, henonHeilesInitVal);
+  extendSpace (henonHeiles, henonHeilesCoeffs, henonHeilesInitVal);
   cout << "--------------------------------\n\n";
 
 
@@ -131,16 +109,17 @@ int main ()
 
   cout << "\n The space extension for Rabinovich-Fabrikant ODE:";
   cout << endl;
-  extendSpace (rabinovichFabrikant, 3, rabinovichFabrikantCoeffs, rabinovichFabrikantInitVal);
+  extendSpace (rabinovichFabrikant, rabinovichFabrikantCoeffs, rabinovichFabrikantInitVal);
   cout << "--------------------------------\n\n";
 
   return 0;
 }
 
 
-void extendSpace (const vector<int> &equationVector, const int stEq, vector<mpq_class> myCoeffs, const vector<mpq_class> initVal)
+void extendSpace (const vector<int> &equationVector, vector<mpq_class> myCoeffs, const vector<mpq_class> initVal)
 {
 
+  const int stEq = initVal.size();
   vector<int> runVec = equationVector;
   map<vector<int>, int> myMap;
 
@@ -318,7 +297,7 @@ cout << "\nThe map for stacking the equations is " << endl;
   vector<mpq_class> resOfMatVecProd(runInitVal.size(), 0);
   vector<mpq_class> resOfKronProdAccumulator(runInitVal.size()*(runInitVal.size()+1)/2, 0);
 
-  const int max_iter = 500;
+  const int max_iter = 5;
 
   vector<vector<mpq_class>> rho;
 
@@ -360,7 +339,7 @@ cout << "\nThe map for stacking the equations is " << endl;
     rho.push_back(resOfMatVecProd);
   }
 
-/*
+
   const mpq_class t(1, 10);    // time value under consideration
   mpq_class leftPart(1);
 
@@ -372,7 +351,7 @@ cout << "\nThe map for stacking the equations is " << endl;
     std::transform (solution.begin(), solution.end(), solutionIngredient.begin(), solution.begin(), std::plus<mpq_class>());
     leftPart = leftPart * t;
   }
-*/
+
 
   cout << "\nThe rho vectors are\n";
   for(int i = 0; i < max_iter; i++)
@@ -384,14 +363,21 @@ cout << "\nThe map for stacking the equations is " << endl;
     }
   }
 
-/*
   cout << "\nThe solution of the initial value problem at t=" << t <<  " is\n";
 
-  for (auto element : solution)
+  for(myMapIterator=myMap.begin();myMapIterator !=myMap.end();++myMapIterator)
   {
-    cout << element << " ";
+
+    tempVec = myMapIterator->first;
+    cout << "[ ";
+
+    for (auto dummy : tempVec)
+      cout << dummy << " ";
+
+    cout << "]: ";
+    cout << solution[myMapIterator->second] << endl;
   }
-*/
+
   cout << endl; 
 
   return;
