@@ -297,7 +297,7 @@ cout << "\nThe map for stacking the equations is " << endl;
   vector<mpq_class> resOfMatVecProd(runInitVal.size(), 0);
   vector<mpq_class> resOfKronProdAccumulator(runInitVal.size()*(runInitVal.size()+1)/2, 0);
 
-  const int max_iter = 5;
+  const int max_iter = 10;
 
   vector<vector<mpq_class>> rho;
 
@@ -312,21 +312,24 @@ cout << "\nThe map for stacking the equations is " << endl;
 
   for(int j=0; j < max_iter; j++)
   {
-    if( j%2 == 0)
+
+    if(j%2 == 0)
     {
-       for(int k=0; k<(j/2-1); k++)
+       std::fill(resOfKronProdAccumulator.begin(), resOfKronProdAccumulator.end(), 0);
+       for(int k=0; k<=(j/2-1); k++)
        {
          condensedKroneckerProduct(resOfKronProd, rho[k], rho[j-k]);
          std::transform (resOfKronProdAccumulator.begin(), resOfKronProdAccumulator.end(), resOfKronProd.begin(), resOfKronProdAccumulator.begin(), std::plus<mpq_class>());
        }
        condensedKroneckerProduct(resOfKronProd, rho[j/2], rho[j/2]);
-       std::transform(resOfKronProd.begin(), resOfKronProd.end(), resOfKronProd.begin(), [&aHalf](auto& c){return c*aHalf;});
+       std::transform(resOfKronProd.begin(), resOfKronProd.end(), resOfKronProd.begin(), [&aHalf](mpq_class& c){return c*aHalf;});
        std::transform (resOfKronProdAccumulator.begin(), resOfKronProdAccumulator.end(), resOfKronProd.begin(), resOfKronProdAccumulator.begin(), std::plus<mpq_class>());
 
     }
     else
     {
-       for(int k=0; k<(j-1)/2; k++)
+       std::fill(resOfKronProdAccumulator.begin(), resOfKronProdAccumulator.end(), 0);
+       for(int k=0; k<=(j-1)/2; k++)
        {
          condensedKroneckerProduct(resOfKronProd, rho[k], rho[j-k]);
          std::transform (resOfKronProdAccumulator.begin(), resOfKronProdAccumulator.end(), resOfKronProd.begin(), resOfKronProdAccumulator.begin(), std::plus<mpq_class>());
@@ -335,7 +338,7 @@ cout << "\nThe map for stacking the equations is " << endl;
 
     sparseMatTimesVec(resOfMatVecProd, rowInd, colInd, myValue, resOfKronProdAccumulator, runInitVal.size());
     myconstant = j + 1;
-    std::transform(resOfMatVecProd.begin(), resOfMatVecProd.end(), resOfMatVecProd.begin(), [&myconstant](auto& c){return c*myconstant;});
+    std::transform(resOfMatVecProd.begin(), resOfMatVecProd.end(), resOfMatVecProd.begin(), [&myconstant](mpq_class& c){return c / myconstant;});
     rho.push_back(resOfMatVecProd);
   }
 
@@ -599,7 +602,7 @@ void sparseMatTimesVec(vector<mpq_class>& result, const vector<int> rowInd, cons
 
   for(int i=0; i < rowInd.size(); i++)
   {
-    result[rowInd[i]] += myCoeffs[i] * x[colInd[i]];
+    result[rowInd[i]] += myCoeffs[i] * x[colInd[i]];   
   }
   return;
 }
