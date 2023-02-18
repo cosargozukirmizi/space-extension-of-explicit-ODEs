@@ -337,8 +337,9 @@ cout << "\nThe map for stacking the equations is " << endl;
     }
 
     sparseMatTimesVec(resOfMatVecProd, rowInd, colInd, myValue, resOfKronProdAccumulator, runInitVal.size());
-    myconstant = j + 1;
+    myconstant = (j + 1);
     std::transform(resOfMatVecProd.begin(), resOfMatVecProd.end(), resOfMatVecProd.begin(), [&myconstant](mpq_class& c){return c / myconstant;});
+    std::transform(resOfMatVecProd.begin(), resOfMatVecProd.end(), resOfMatVecProd.begin(), [](mpq_class& c){return c * 2;});
     rho.push_back(resOfMatVecProd);
   }
 
@@ -352,7 +353,7 @@ cout << "\nThe map for stacking the equations is " << endl;
     solutionIngredient = rho[i];
     std::transform(solutionIngredient.begin(), solutionIngredient.end(), solutionIngredient.begin(), [&leftPart](auto& c){return c*leftPart;});
     std::transform (solution.begin(), solution.end(), solutionIngredient.begin(), solution.begin(), std::plus<mpq_class>());
-    leftPart = leftPart * t;
+    leftPart = leftPart * t;  // I don't know why I have multiplied by 2
   }
 
 
