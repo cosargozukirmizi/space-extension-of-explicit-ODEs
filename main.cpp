@@ -8,8 +8,8 @@
 
 using namespace std;
 
-void extendSpace (const vector<int> &equationVector, vector<mpq_class> myCoeffs, const vector<mpq_class> initVal);
-void toLatex (const vector<int> &equationVector, const int stEq, const vector<mpq_class> &myCoeffs);
+void extendSpace (const vector<int>& equationVector, vector<mpq_class> myCoeffs, const vector<mpq_class> initVal, const int max_iter = 10);
+void toLatex (const vector<int>& equationVector, const int stEq, const vector<mpq_class>& myCoeffs);
 void printAsTripleF(const vector<int> rowInd, const vector<int> colInd, const vector<mpq_class> myValue);
 void constructF(vector<int>& rowInd, vector<int>& colInd, vector<mpq_class>& myValue, const vector<int> runVec, map<vector<int>, int> myMap, const vector<mpq_class> myCoeffs, const int stEq);
 void condensedKroneckerProduct(vector<mpq_class>& result, const vector<mpq_class> a, const vector<mpq_class> b);
@@ -18,6 +18,7 @@ void constructAugmentedInitVal(vector<mpq_class>& runInitVal, const vector<mpq_c
 
 int main ()
 {
+  const int max_iter = 10;
   const vector<int> vanderPol
   {
     1, 0,  0, 0,  1, 0,
@@ -30,13 +31,13 @@ int main ()
    mpq_class(1), mpq_class(-1,3), mpq_class(-1), mpq_class(1)
   };
 
-  vector<mpq_class> vanderPolInitVal{
+  const vector<mpq_class> vanderPolInitVal{
    mpq_class(1,2), mpq_class(1,2)
   };
 
   cout << "\n The space extension for van der Pol ODE:";
   cout << endl;
-  extendSpace (vanderPol, vanderPolCoeffs, vanderPolInitVal);
+  extendSpace (vanderPol, vanderPolCoeffs, vanderPolInitVal, max_iter);
   cout << "--------------------------------\n\n";
 
 
@@ -51,13 +52,13 @@ int main ()
    mpq_class(1), mpq_class(-1), mpq_class(-1)
   };   // mu is 1, k1 is 1, k2 is 1
 
-  vector<mpq_class> quarticAnharmonicOscillatorInitVal{
+  const vector<mpq_class> quarticAnharmonicOscillatorInitVal{
    mpq_class(1,2),mpq_class(1,2)
   };
 
   cout << "\n The space extension for classical quartic anharmonic oscillator ODE:";
   cout << endl;
-  extendSpace (quarticAnharmonicOscillator, quarticAnharmonicOscillatorCoeffs, quarticAnharmonicOscillatorInitVal);
+  extendSpace (quarticAnharmonicOscillator, quarticAnharmonicOscillatorCoeffs, quarticAnharmonicOscillatorInitVal, max_iter);
   cout << "--------------------------------\n\n";
 
   const vector<int> henonHeiles
@@ -75,13 +76,13 @@ int main ()
    mpq_class(1), mpq_class(-1), mpq_class(-2), mpq_class(1), mpq_class(-1), mpq_class(-1), mpq_class(1)
   }; // lambda is 1
 
-  vector<mpq_class> henonHeilesInitVal{
+  const vector<mpq_class> henonHeilesInitVal{
    mpq_class(1,2), mpq_class(1,2), mpq_class(1,2), mpq_class(1,2)
   };
 
   cout << "\n The space extension for Henon-Heiles ODE:";
   cout << endl;
-  extendSpace (henonHeiles, henonHeilesCoeffs, henonHeilesInitVal);
+  extendSpace (henonHeiles, henonHeilesCoeffs, henonHeilesInitVal, max_iter);
   cout << "--------------------------------\n\n";
 
 
@@ -103,20 +104,20 @@ int main ()
    mpq_class(1), mpq_class(-1), mpq_class(1), mpq_class(1), mpq_class(3), mpq_class(1), mpq_class(-1), mpq_class(1), mpq_class(-2), mpq_class(-2)
   }; // gamma is 1, alpha is 1
 
-  vector<mpq_class> rabinovichFabrikantInitVal{
+  const vector<mpq_class> rabinovichFabrikantInitVal{
    mpq_class(1,2), mpq_class(1,2), mpq_class(1,2)
   };
 
   cout << "\n The space extension for Rabinovich-Fabrikant ODE:";
   cout << endl;
-  extendSpace (rabinovichFabrikant, rabinovichFabrikantCoeffs, rabinovichFabrikantInitVal);
+  extendSpace (rabinovichFabrikant, rabinovichFabrikantCoeffs, rabinovichFabrikantInitVal, max_iter);
   cout << "--------------------------------\n\n";
 
   return 0;
 }
 
 
-void extendSpace (const vector<int> &equationVector, vector<mpq_class> myCoeffs, const vector<mpq_class> initVal)
+void extendSpace (const vector<int>& equationVector, vector<mpq_class> myCoeffs, const vector<mpq_class> initVal, const int max_iter)
 {
 
   const int stEq = initVal.size();
@@ -258,7 +259,7 @@ void extendSpace (const vector<int> &equationVector, vector<mpq_class> myCoeffs,
     myMapIterator->second = myDummyVariable++;
   }
 
-cout << "\nThe map for stacking the equations is " << endl;
+  cout << "\nThe map for stacking the equations is " << endl;
 
   for(myMapIterator=myMap.begin();myMapIterator !=myMap.end();++myMapIterator)
   {
@@ -297,8 +298,6 @@ cout << "\nThe map for stacking the equations is " << endl;
   vector<mpq_class> resOfMatVecProd(runInitVal.size(), 0);
   vector<mpq_class> resOfKronProdAccumulator(runInitVal.size()*(runInitVal.size()+1)/2, 0);
 
-  const int max_iter = 10;
-
   vector<vector<mpq_class>> rho;
 
   rho.push_back(runInitVal);
@@ -324,7 +323,6 @@ cout << "\nThe map for stacking the equations is " << endl;
        condensedKroneckerProduct(resOfKronProd, rho[j/2], rho[j/2]);
        std::transform(resOfKronProd.begin(), resOfKronProd.end(), resOfKronProd.begin(), [&aHalf](mpq_class& c){return c*aHalf;});
        std::transform (resOfKronProdAccumulator.begin(), resOfKronProdAccumulator.end(), resOfKronProd.begin(), resOfKronProdAccumulator.begin(), std::plus<mpq_class>());
-
     }
     else
     {
@@ -343,21 +341,7 @@ cout << "\nThe map for stacking the equations is " << endl;
     rho.push_back(resOfMatVecProd);
   }
 
-
-  const mpq_class t(1, 10);    // time value under consideration
-  mpq_class leftPart(1);
-
-
-  for(int i = 0; i < max_iter; i++)
-  {
-    solutionIngredient = rho[i];
-    std::transform(solutionIngredient.begin(), solutionIngredient.end(), solutionIngredient.begin(), [&leftPart](auto& c){return c*leftPart;});
-    std::transform (solution.begin(), solution.end(), solutionIngredient.begin(), solution.begin(), std::plus<mpq_class>());
-    leftPart = leftPart * t;  // I don't know why I have multiplied by 2
-  }
-
-
-  cout << "\nThe rho vectors are\n";
+  cout << "\nAfter "<< max_iter-1 << " iterations, the rho vectors are\n";
   for(int i = 0; i < max_iter; i++)
   {
     cout << "\nrho[" << i << "] :\n";
@@ -367,27 +351,47 @@ cout << "\nThe map for stacking the equations is " << endl;
     }
   }
 
-  cout << "\nThe solution of the initial value problem at t=" << t <<  " is\n";
+  const mpq_class t_max(1, 10);    // time value under consideration
+  const mpq_class t_step(t_max/10);
+  mpq_class leftPart(1);
 
-  for(myMapIterator=myMap.begin();myMapIterator !=myMap.end();++myMapIterator)
+  for(mpq_class indQ=0; indQ<=t_max; indQ=indQ+t_step)
   {
+    cout << endl;
+    leftPart = 1;
+    std::fill(solutionIngredient.begin(), solutionIngredient.end(), 0);
+    std::fill(solution.begin(), solution.end(), 0);
+    for(int i = 0; i < max_iter; i++)
+    {
+      solutionIngredient = rho[i];
+      std::transform(solutionIngredient.begin(), solutionIngredient.end(), solutionIngredient.begin(), [&leftPart](auto& c){return c*leftPart;});
+      std::transform (solution.begin(), solution.end(), solutionIngredient.begin(), solution.begin(), std::plus<mpq_class>());
 
-    tempVec = myMapIterator->first;
-    cout << "[ ";
+      cout << "\n\nAfter "<< i << " iteration" << (i==1 ? ", " : "s, ") << "the solution of the initial value problem at t=" << indQ <<  " is\n";
 
-    for (auto dummy : tempVec)
-      cout << dummy << " ";
+      for(myMapIterator=myMap.begin();myMapIterator !=myMap.end();++myMapIterator)
+      {
 
-    cout << "]: ";
-    cout << solution[myMapIterator->second] << endl;
+        tempVec = myMapIterator->first;
+        cout << "[ ";
+
+        for (auto dummy : tempVec)
+          cout << dummy << " ";
+
+        cout << "]: ";
+        cout << solution[myMapIterator->second] << endl;
+      }
+
+      leftPart = leftPart * indQ;
+    }
+
   }
-
-  cout << endl; 
+  cout << endl;
 
   return;
 }
 
-void toLatex (const vector<int> &equationVector, const int stEq, const vector<mpq_class> &myCoeffs)
+void toLatex (const vector<int>& equationVector, const int stEq, const vector<mpq_class>& myCoeffs)
 {
   cout << endl;
   cout << "\\begin{eqnarray}" << endl;
@@ -399,7 +403,7 @@ void toLatex (const vector<int> &equationVector, const int stEq, const vector<mp
   for (auto i = 0; i < equationVector.size(); i+=3*stEq)
   {
     bool same = 0;
-    leftHandSide.assign(equationVector.begin()+i, equationVector.begin()+i+stEq); 
+    leftHandSide.assign(equationVector.begin()+i, equationVector.begin()+i+stEq);
     if ( i != 0 && leftHandSide == prevLeftHandSide )
     {
       same = 1;
@@ -603,7 +607,7 @@ void sparseMatTimesVec(vector<mpq_class>& result, const vector<int> rowInd, cons
 
   for(int i=0; i < rowInd.size(); i++)
   {
-    result[rowInd[i]] += myCoeffs[i] * x[colInd[i]];   
+    result[rowInd[i]] += myCoeffs[i] * x[colInd[i]];
   }
   return;
 }
