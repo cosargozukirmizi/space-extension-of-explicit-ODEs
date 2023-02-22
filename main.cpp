@@ -18,7 +18,7 @@ void constructAugmentedInitVal(vector<mpq_class>& runInitVal, const vector<mpq_c
 
 int main ()
 {
-  const int max_iter = 10;
+  const int max_iter = 50;
   const vector<int> vanderPol
   {
     1, 0,  0, 0,  1, 0,
@@ -379,7 +379,10 @@ void extendSpace (const vector<int>& equationVector, vector<mpq_class> myCoeffs,
           cout << dummy << " ";
 
         cout << "]: ";
-        cout << solution[myMapIterator->second] << endl;
+        cout << solution[myMapIterator->second] << endl << "= ";
+
+        mpf_class f(solution[myMapIterator->second], 500);
+        gmp_printf ("%.*Ff\n", 50, f);
       }
 
       leftPart = leftPart * indQ;
