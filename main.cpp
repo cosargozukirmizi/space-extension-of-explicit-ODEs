@@ -132,13 +132,13 @@ void extendSpace (const std::vector<int>& equationVector, std::vector<mpq_class>
 
   bool appears = 0;
 
-  int i = 0;
-  int numEqs = stEq;
+  vector<int>::size_type i = 0;
+  auto numEqs = stEq;
 
   vector<int> rightHandSide (stEq, 0);
   vector<int> tempLeft (stEq, 0);
 
-  for (auto i = 0; i < runVec.size (); i+=3*stEq)
+  for (vector<int>::size_type i = 0; i < runVec.size (); i+=3*stEq)
   {
     tempLeft.assign(equationVector.begin()+i, equationVector.begin()+i+stEq);
     myMap.insert({tempLeft, 0});
@@ -146,9 +146,9 @@ void extendSpace (const std::vector<int>& equationVector, std::vector<mpq_class>
 
   while (i < runVec.size ())
   {
-    for (int j = stEq; j <= 2 * stEq; j += stEq)
+    for (auto j = stEq; j <= 2 * stEq; j += stEq)
     {
-      for (int k = 0; k < stEq; k++)
+      for (auto k = 0; k < stEq; k++)
       {
         rightHandSide[k] = runVec[i + j + k];
       }
@@ -157,7 +157,7 @@ void extendSpace (const std::vector<int>& equationVector, std::vector<mpq_class>
          myMap.insert({rightHandSide, 0});
       }
 
-      for (int i = 0; i < runVec.size (); i += 3 * stEq)
+      for (vector<int>::size_type i = 0; i < runVec.size (); i += 3 * stEq)
       {
         vector<int> subvector(stEq, 0);
         subvector = {runVec.begin () + i, runVec.begin () + i + stEq};
@@ -181,21 +181,21 @@ void extendSpace (const std::vector<int>& equationVector, std::vector<mpq_class>
         }
         else
         {
-          for (int i = 0; i < equationVector.size (); i += 3*stEq)
+          for (vector<int>::size_type i = 0; i < equationVector.size (); i += 3*stEq)
           {
             vector<int>::const_iterator it;
             it = find (equationVector.begin () + i, equationVector.begin () + i + 3*stEq, 1);
-            int oneInd = (it - equationVector.begin ());
+            vector<int>::size_type oneInd = (it - equationVector.begin ());
 
             bool x = 0;
             vector<int> myTemp(stEq, 0);
 
-            for (int j = 0; j < stEq; j++)
+            for (auto j = 0; j < stEq; j++)
             {
               if (oneInd == i+j && rightHandSide[j] > 0)
               {
                 x = 1;
-                for (int k = 0 ; k < stEq; k++)
+                for (auto k = 0 ; k < stEq; k++)
                 {
                   myTemp[k] =
                     equationVector[i + stEq + k] + equationVector[i + stEq + stEq + k] +
@@ -216,10 +216,10 @@ void extendSpace (const std::vector<int>& equationVector, std::vector<mpq_class>
             vector<int> lefts;
             int oneCount = 0;
 
-            for (int counter = 0; counter < stEq; counter++)
+            for (auto counter = 0; counter < stEq; counter++)
               runVec.push_back (rightHandSide[counter]);
 
-            for (int i = 0; i < myTemp.size (); i++)
+            for (vector<int>::size_type i = 0; i < myTemp.size (); ++i)
             {
               if (myTemp[i] == 1)
               {
@@ -236,7 +236,7 @@ void extendSpace (const std::vector<int>& equationVector, std::vector<mpq_class>
                 runVec.push_back(1);
               }
             }
-            for (int i = 0; i < lefts.size (); i++)
+            for (vector<int>::size_type i = 0; i < lefts.size (); ++i)
             {
               runVec.push_back(myTemp[i] - lefts[i]);
             }
@@ -254,36 +254,28 @@ void extendSpace (const std::vector<int>& equationVector, std::vector<mpq_class>
 
   cout << '\n';
 
-  map<vector<int>, int> ::iterator myMapIterator;
-  vector<int> tempVec;
-
-
-  int myDummyVariable = 0;
-
-  for(myMapIterator=myMap.begin();myMapIterator !=myMap.end();++myMapIterator)
+  for(auto myDummyVariable = 0; auto& [key, value] : myMap)
   {
-    myMapIterator->second = myDummyVariable++;
+    value = myDummyVariable++;
   }
 
   cout << "\nThe map for stacking the equations is " << '\n';
 
-  for(map<vector<int>, int>::const_iterator myMapIt=myMap.begin(); myMapIt != myMap.end(); ++myMapIt)
+  for(const auto& [key, value] : myMap)
   {
-    tempVec = myMapIt->first;
     cout << "[ ";
 
-    for (auto dummy : tempVec)
+    for (const auto& dummy : key)
       cout << dummy << " ";
 
     cout << "]:";
-    cout << myMapIt->second << ", " << '\n';
+    cout << value<< ", " << '\n';
   }
 
   vector<mpq_class> runInitVal(myMap.size());
-  vector<mpq_class> emptyInitVal(myMap.size());
 
-  cout << "\n" << "Now we will try to construct initial vector." << '\n';
-  cout << "It is given as index value pairs below. " << '\n';
+  cout << "\n" << "Now we will try to construct initial vector.\n";
+  cout << "It is given as index value pairs below. \n";
 
   constructAugmentedInitVal(runInitVal, initVal, myMap);
 
@@ -293,7 +285,7 @@ void extendSpace (const std::vector<int>& equationVector, std::vector<mpq_class>
     cout << myMapIt->second << " " << runInitVal[myMapIt->second] << '\n';
   }
 
-  cout << "\n" << "Now we will try to construct F: " << '\n';
+  cout << "\n" << "Now we will try to construct F: \n";
 
   vector<int> rowInd;
   vector<int> colInd;
@@ -318,7 +310,7 @@ void extendSpace (const std::vector<int>& equationVector, std::vector<mpq_class>
   {
     mpq_class myconstant;
 
-    for(int j=0; j < max_iter; j=j+2)
+    for(auto j=0; j < max_iter; j=j+2)
     {
 
        const mpq_class aHalf(1,2);
@@ -332,7 +324,7 @@ void extendSpace (const std::vector<int>& equationVector, std::vector<mpq_class>
        std::transform (resOfKronProdAccumulator.begin(), resOfKronProdAccumulator.end(), resOfKronProd.begin(), resOfKronProdAccumulator.begin(), std::plus<mpq_class>());
 
 
-       for(int k=(j/2-1); k>0; k--)
+       for(auto k=(j/2-1); k>0; --k)
        {
          condensedKroneckerProduct(resOfKronProd, rho[k], rho[j-k]);
          std::transform (resOfKronProdAccumulator.begin(), resOfKronProdAccumulator.end(), resOfKronProd.begin(), resOfKronProdAccumulator.begin(), std::plus<mpq_class>());
@@ -364,7 +356,7 @@ void extendSpace (const std::vector<int>& equationVector, std::vector<mpq_class>
   auto oddSummer = [&]()
   {
     mpq_class myconstant;
-    for(int j=1; j < max_iter; j=j+2)
+    for(auto j=1; j < max_iter; j=j+2)
     {
        const mpq_class aHalf(1,2);
        vector<mpq_class> resOfKronProd(runInitVal.size()*(runInitVal.size()+1)/2, 0);
@@ -373,7 +365,7 @@ void extendSpace (const std::vector<int>& equationVector, std::vector<mpq_class>
 
        std::fill(resOfKronProdAccumulator.begin(), resOfKronProdAccumulator.end(), 0);
 
-       for(int k=(j-1)/2; k>0; k--)  // 0 not included for a reason
+       for(auto k=(j-1)/2; k>0; k--)  // 0 not included for a reason
        {
          condensedKroneckerProduct(resOfKronProd, rho[k], rho[j-k]);
          std::transform (resOfKronProdAccumulator.begin(), resOfKronProdAccumulator.end(), resOfKronProd.begin(), resOfKronProdAccumulator.begin(), std::plus<mpq_class>());
@@ -407,10 +399,10 @@ void extendSpace (const std::vector<int>& equationVector, std::vector<mpq_class>
   std::cout << "elapsed wall clock time for computing rho vectors: " << elapsed_seconds.count() << "s\n";
 
   cout << "\nAfter "<< max_iter-1 << " iterations, the rho vectors are\n";
-  for(int i = 0; i < max_iter; i++)
+  for(auto i = 0; i < max_iter; i++)
   {
     cout << "\nrho[" << i << "] :\n";
-    for (auto element : rho[i])
+    for (const auto& element : rho[i])
     {
        cout << element << '\n';
     }
@@ -429,7 +421,7 @@ void extendSpace (const std::vector<int>& equationVector, std::vector<mpq_class>
     leftPart = 1;
     std::fill(solutionIngredient.begin(), solutionIngredient.end(), 0);
     std::fill(solution.begin(), solution.end(), 0);
-    for(int i = 0; i < max_iter; i++)
+    for(auto i = 0; i < max_iter; i++)
     {
       solutionIngredient = rho[i];
       std::transform(solutionIngredient.begin(), solutionIngredient.end(), solutionIngredient.begin(), [&leftPart](auto& c){return c*leftPart;});
@@ -437,23 +429,21 @@ void extendSpace (const std::vector<int>& equationVector, std::vector<mpq_class>
 
       cout << "\n\nAfter "<< i << " iteration" << (i==1 ? ", " : "s, ") << "the solution of the initial value problem at t=" << indQ <<  " is\n";
 
-      for(map<vector<int>, int>::const_iterator myMapIt=myMap.begin();myMapIt!=myMap.end();++myMapIt)
+      for(const auto& [key, value] : myMap)
       {
-
-        tempVec = myMapIt->first;
         cout << "[ ";
 
-        for (auto dummy : tempVec)
+        for (const auto& dummy : key)
           cout << dummy << " ";
 
         cout << "]: ";
-        cout << solution[myMapIt->second] << '\n' << "= ";
+        cout << solution[value] << '\n' << "= ";
 
-        mpf_class f(solution[myMapIt->second], 500);
+        mpf_class f(solution[value], 500);
         gmp_printf ("%.*Ff\n", 50, f);
       }
 
-      leftPart = leftPart * indQ;
+      leftPart *= indQ;
     }
 
   }
@@ -473,7 +463,7 @@ void toLatex (const std::vector<int>& equationVector, const int stEq, const std:
   vector<int> leftHandSide(stEq);
   vector<int> allZero(stEq,0);
 
-  for (auto i = 0; i < equationVector.size(); i+=3*stEq)
+  for (vector<int>::size_type i = 0; i < equationVector.size(); i+=3*stEq)
   {
     bool same = 0;
     leftHandSide.assign(equationVector.begin()+i, equationVector.begin()+i+stEq);
@@ -583,28 +573,23 @@ int findPlace(const int a, const int b, const int n)
 void constructAugmentedInitVal(std::vector<mpq_class>& runInitVal, const std::vector<mpq_class>& initVal, const std::map<std::vector<int>, int>& myMap)
 {
   using namespace std;
-  map<vector<int>, int> ::const_iterator myMapIterator;
-  vector<int> tempVec;
-  mpq_class tempVal(1);
-  mpq_class tempInside(1);
 
-  for(myMapIterator=myMap.begin();myMapIterator !=myMap.end();++myMapIterator)
+  for(const auto& [key, value] : myMap)
   {
-    tempVec = myMapIterator->first;
-    tempVal = 1;
+    mpq_class tempVal(1);
 
-    for(int i = 0; i<tempVec.size(); i++)
+    for(vector<int>::size_type i = 0; i<key.size(); ++i)
     {
+      mpq_class tempInside(1);
 
-      tempInside = 1;
-      for(int j=1; j<=tempVec[i]; j++)
+      for(auto j = 1; j<=key[i]; ++j)
       {
         tempInside = tempInside * initVal[i];
       }
       tempVal = tempVal * tempInside;
     }
 
-    runInitVal[myMapIterator->second] = tempVal;
+    runInitVal[value] = tempVal;
   }
 }
 
@@ -616,7 +601,7 @@ void constructF(std::vector<int>& rowInd, std::vector<int>& colInd, std::vector<
   vector<int> middle(stEq);
   vector<int> right(stEq);
 
-  for(auto i = 0; i < runVec.size(); i+=3*stEq)
+  for(vector<int>::size_type i = 0; i < runVec.size(); i+=3*stEq)
   {
     left = { runVec.begin() + i, runVec.begin() + i + stEq };
     middle = { runVec.begin() + i + stEq, runVec.begin() + i + stEq +stEq };
@@ -649,7 +634,7 @@ void printAsTripleF(const std::vector<int>& rowInd, const std::vector<int>& colI
 
   cout << setw(5) << "row" << ' ' << setw(5) << "col" << ' ' << setw(5) << "val" << '\n';
 
-  for(auto i = 0; i < rowInd.size(); i++)
+  for(vector<int>::size_type i = 0; i < rowInd.size(); i++)
     cout << setw(5) << rowInd[i] << ' ' << setw(5) << colInd[i] << ' ' << setw(5) << myValue[i] << '\n';
 
   return;
@@ -659,13 +644,12 @@ void condensedKroneckerProduct(std::vector<mpq_class>& result, const std::vector
 {
   using namespace std;
 
-  const int n = a.size();
   result.clear();
 
-  for (int i = 0; i < n; ++i)
+  for (vector<mpq_class>::size_type i = 0; i < a.size(); ++i)
   {
     result.push_back(a[i]*b[i]);
-    for (int j = i+1; j < n; ++j)
+    for (vector<mpq_class>::size_type j = i+1; j < a.size(); ++j)
     {
       result.push_back(a[i]*b[j]+a[j]*b[i]);
     }
@@ -680,10 +664,11 @@ void sparseMatTimesVec(std::vector<mpq_class>& result, const std::vector<int>& r
   result.clear();
   result.resize(resSize,0);
 
-  for(int i=0; i < rowInd.size(); ++i)
+  for(vector<int>::size_type i = 0; i < rowInd.size(); ++i)
   {
     result[rowInd[i]] += myCoeffs[i] * x[colInd[i]];
   }
+
   return;
 }
 
