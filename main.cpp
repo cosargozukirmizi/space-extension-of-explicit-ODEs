@@ -300,20 +300,14 @@ void extendSpace (const std::vector<int>& equationVector, std::vector<mpq_class>
 
   rho.at(0) = (runInitVal);
 
-  vector<mpq_class> solutionIngredient(runInitVal.size(), 0);
-  vector<mpq_class> solution(runInitVal.size(), 0);
-
   vector<mpq_class> resOfKronProd(runInitVal.size()*(runInitVal.size()+1)/2, 0);
 
   condensedKroneckerProduct(resOfKronProd, rho[0], rho[0]);
   std::transform(resOfKronProd.begin(), resOfKronProd.end(), resOfKronProd.begin(), [](mpq_class& c){return c / 2;});
 
-  vector<mpq_class> resOfMatVecProduct(runInitVal.size(), 0);
+  sparseMatTimesVec(rho.at(1), rowInd, colInd, myValue, resOfKronProd);
+  std::transform((rho.at(1)).begin(), (rho.at(1)).end(), (rho.at(1)).begin(), [](mpq_class& c){return c * 2;});
 
-  sparseMatTimesVec(resOfMatVecProduct, rowInd, colInd, myValue, resOfKronProd);
-  std::transform(resOfMatVecProduct.begin(), resOfMatVecProduct.end(), resOfMatVecProduct.begin(), [](mpq_class& c){return c * 2;});
-
-  rho.at(1) = resOfMatVecProduct;
 
   auto evenSummer = [&]()
   {
@@ -415,18 +409,21 @@ void extendSpace (const std::vector<int>& equationVector, std::vector<mpq_class>
 
   const mpq_class t_max(1, 10);    // time value under consideration
   const mpq_class t_step(t_max/10);
-  mpq_class leftPart(1);
+
 
   for(mpq_class indQ=0; indQ<=t_max; indQ=indQ+t_step)
   {
+
+    vector<mpq_class> solution(runInitVal.size(), 0);
+
     cout << '\n';
-    leftPart = 1;
-    std::fill(solutionIngredient.begin(), solutionIngredient.end(), 0);
-    std::fill(solution.begin(), solution.end(), 0);
+    mpq_class leftPart(1);
+
     for(auto i = 0; i < max_iter; i++)
     {
-      solutionIngredient = rho[i];
-      std::transform(solutionIngredient.begin(), solutionIngredient.end(), solutionIngredient.begin(), [&leftPart](auto& c){return c*leftPart;});
+      vector<mpq_class> solutionIngredient(rho[i].begin(), rho[i].end());
+
+      std::transform (solutionIngredient.begin(), solutionIngredient.end(), solutionIngredient.begin(), [&leftPart](auto& c){return c*leftPart;});
       std::transform (solution.begin(), solution.end(), solutionIngredient.begin(), solution.begin(), std::plus<mpq_class>());
 
       cout << "\n\nAfter "<< i << " iteration" << (i==1 ? ", " : "s, ") << "the solution of the initial value problem at t=" << indQ <<  " is\n";
