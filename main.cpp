@@ -17,7 +17,6 @@ void condensedKroneckerProduct(std::vector<mpq_class>& result, const std::vector
 void sparseMatTimesVec(std::vector<mpq_class>& result, const std::vector<int>& rowInd, const std::vector<int>& colInd, const std::vector<mpq_class>& myCoeffs, const std::vector<mpq_class>& x);
 void constructAugmentedInitVal(std::vector<mpq_class>& runInitVal, const std::vector<mpq_class>& initVal, const std::map<std::vector<int>, int>& myMap);
 
-std::binary_semaphore smphSignalMainToThread{0}, smphSignalThreadToMain{0};
 
 int main ()
 {
@@ -294,7 +293,7 @@ void extendSpace (const std::vector<int>& equationVector, std::vector<mpq_class>
   constructF(rowInd, colInd, myValue, runVec, myMap, myCoeffs, stEq);
 
 
-  vector<vector<mpq_class>> rho(max_iter+1, vector<mpq_class>(runInitVal.size()));
+  vector<vector<mpq_class>> rho(max_iter, vector<mpq_class>(runInitVal.size()));
 
   auto start = std::chrono::steady_clock::now();
 
@@ -308,11 +307,12 @@ void extendSpace (const std::vector<int>& equationVector, std::vector<mpq_class>
   sparseMatTimesVec(rho.at(1), rowInd, colInd, myValue, resOfKronProd);
   std::transform((rho.at(1)).begin(), (rho.at(1)).end(), (rho.at(1)).begin(), [](mpq_class& c){return c * 2;});
 
+  std::binary_semaphore smphSignalMainToThread{1}, smphSignalThreadToMain{0};  // oddSummer has green light, it is good to go
 
   auto evenSummer = [&]()
   {
 
-    for(auto j=2; j < max_iter; j=j+2)
+    for(auto j=2; j < max_iter-1; j=j+2)
     {
        vector<mpq_class> resOfKronProd(runInitVal.size()*(runInitVal.size()+1)/2, 0);
        vector<mpq_class> resOfMatVecProd(runInitVal.size(), 0);
@@ -343,8 +343,7 @@ void extendSpace (const std::vector<int>& equationVector, std::vector<mpq_class>
 
        rho.at(j+1) = resOfMatVecProd;
 
-       if ( j != max_iter-1 )
-         smphSignalMainToThread.release();
+       smphSignalMainToThread.release();
     }
 
   };
@@ -352,7 +351,7 @@ void extendSpace (const std::vector<int>& equationVector, std::vector<mpq_class>
 
   auto oddSummer = [&]()
   {
-    for(auto j=1; j < max_iter; j=j+2)
+    for(auto j=1; j < max_iter-1; j=j+2)
     {
        vector<mpq_class> resOfKronProd(runInitVal.size()*(runInitVal.size()+1)/2, 0);
        vector<mpq_class> resOfMatVecProd(runInitVal.size(), 0);
@@ -379,12 +378,10 @@ void extendSpace (const std::vector<int>& equationVector, std::vector<mpq_class>
 
        rho.at(j+1) = resOfMatVecProd;
 
-       if ( j != max_iter-1 )
-         smphSignalThreadToMain.release();
+       smphSignalThreadToMain.release();
     }
   };
 
-  smphSignalMainToThread.release();
   thread t(oddSummer);
   evenSummer();
 
@@ -395,10 +392,11 @@ void extendSpace (const std::vector<int>& equationVector, std::vector<mpq_class>
   std::cout << "elapsed wall clock time for computing rho vectors: " << elapsed_seconds.count() << "s\n";
 
   cout << "\nAfter "<< max_iter-1 << " iterations, the rho vectors are\n";
-  for(auto i = 0; i < max_iter; i++)
+
+  for (auto i = 0; const auto& myRho : rho)
   {
-    cout << "\nrho[" << i << "] :\n";
-    for (const auto& element : rho[i])
+    cout << "\nrho[" << i++ << "] :\n";
+    for (const auto& element : myRho)
     {
        cout << element << '\n';
     }
@@ -456,7 +454,7 @@ void toLatex (const std::vector<int>& equationVector, const int stEq, const std:
   using namespace std;
 
   cout << '\n';
-  cout << "\\begin{eqnarray}" << '\n';
+  cout << "\\begin{eqnarray}\n";
 
   vector<int> prevLeftHandSide(stEq);
   vector<int> leftHandSide(stEq);
@@ -510,8 +508,6 @@ void toLatex (const std::vector<int>& equationVector, const int stEq, const std:
       cout << ")} &=& ";
    }
 
-
-    mpq_class myZero(0);
     bool isPos = 1;
 
     if ( sgn(myCoeffs[i/(3*stEq)]) == -1 )
