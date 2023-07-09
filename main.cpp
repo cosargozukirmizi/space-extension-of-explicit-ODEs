@@ -12,7 +12,7 @@
 void extendSpace (const std::vector<int>& equationVector, std::vector<mpq_class>& myCoeffs, const std::vector<mpq_class>& initVal, const int max_iter = 10);
 void toLatex (const std::vector<int>& equationVector, const int stEq, const std::vector<mpq_class>& myCoeffs);
 void printAsTripleF(const std::vector<int>& rowInd, const std::vector<int>& colInd, const std::vector<mpq_class>& myValue);
-void constructF(std::vector<int>& rowInd, std::vector<int>& colInd, std::vector<mpq_class>& myValue, const std::vector<int>& runVec, const std::map<std::vector<int>, int>& myMap, const std::vector<mpq_class>& myCoeffs, const int stEq);
+void construct2F(std::vector<int>& rowInd, std::vector<int>& colInd, std::vector<mpq_class>& myValue, const std::vector<int>& runVec, const std::map<std::vector<int>, int>& myMap, const std::vector<mpq_class>& myCoeffs, const int stEq);
 void condensedKroneckerProduct(std::vector<mpq_class>& result, const std::vector<mpq_class>& a, const std::vector<mpq_class>& b);
 void sparseMatTimesVec(std::vector<mpq_class>& result, const std::vector<int>& rowInd, const std::vector<int>& colInd, const std::vector<mpq_class>& myCoeffs, const std::vector<mpq_class>& x);
 void constructAugmentedInitVal(std::vector<mpq_class>& runInitVal, const std::vector<mpq_class>& initVal, const std::map<std::vector<int>, int>& myMap);
@@ -22,7 +22,7 @@ int main ()
 {
   using namespace std;
 
-  const int max_iter = 50;
+  const int max_iter = 50;   // maximum truncation order is one less than max_iter
   const vector<int> vanderPol
   {
     1, 0,  0, 0,  1, 0,
@@ -290,7 +290,7 @@ void extendSpace (const std::vector<int>& equationVector, std::vector<mpq_class>
   vector<int> colInd;
   vector<mpq_class> myValue;
 
-  constructF(rowInd, colInd, myValue, runVec, myMap, myCoeffs, stEq);
+  construct2F(rowInd, colInd, myValue, runVec, myMap, myCoeffs, stEq);
 
 
   vector<vector<mpq_class>> rho(max_iter, vector<mpq_class>(runInitVal.size()));
@@ -305,7 +305,6 @@ void extendSpace (const std::vector<int>& equationVector, std::vector<mpq_class>
   std::transform(resOfKronProd.begin(), resOfKronProd.end(), resOfKronProd.begin(), [](mpq_class& c){return c / 2;});
 
   sparseMatTimesVec(rho.at(1), rowInd, colInd, myValue, resOfKronProd);
-  std::transform((rho.at(1)).begin(), (rho.at(1)).end(), (rho.at(1)).begin(), [](mpq_class& c){return c * 2;});
 
   std::binary_semaphore smphSignalMainToThread{1}, smphSignalThreadToMain{0};  // oddSummer has green light, it is good to go
 
@@ -337,9 +336,9 @@ void extendSpace (const std::vector<int>& equationVector, std::vector<mpq_class>
 
        sparseMatTimesVec(resOfMatVecProd, rowInd, colInd, myValue, resOfKronProdAccumulator);
 
-       mpq_class myConst(2, (j+1));
+       mpq_class myConst(j+1);
 
-       std::transform(resOfMatVecProd.begin(), resOfMatVecProd.end(), resOfMatVecProd.begin(), [&myConst](mpq_class& c){return c * myConst;});
+       std::transform(resOfMatVecProd.begin(), resOfMatVecProd.end(), resOfMatVecProd.begin(), [&myConst](mpq_class& c){return c / myConst;});
 
        rho.at(j+1) = resOfMatVecProd;
 
@@ -372,9 +371,9 @@ void extendSpace (const std::vector<int>& equationVector, std::vector<mpq_class>
 
        sparseMatTimesVec(resOfMatVecProd, rowInd, colInd, myValue, resOfKronProdAccumulator);
 
-       mpq_class myConst(2, (j+1));
+       mpq_class myConst(j+1);
 
-       std::transform(resOfMatVecProd.begin(), resOfMatVecProd.end(), resOfMatVecProd.begin(), [&myConst](mpq_class& c){return c * myConst;});
+       std::transform(resOfMatVecProd.begin(), resOfMatVecProd.end(), resOfMatVecProd.begin(), [&myConst](mpq_class& c){return c / myConst;});
 
        rho.at(j+1) = resOfMatVecProd;
 
@@ -417,7 +416,7 @@ void extendSpace (const std::vector<int>& equationVector, std::vector<mpq_class>
     cout << '\n';
     mpq_class leftPart(1);
 
-    for(auto i = 0; i < max_iter; i++)
+    for(auto i = 0; i < max_iter; ++i)
     {
       vector<mpq_class> solutionIngredient(rho[i].begin(), rho[i].end());
 
@@ -425,6 +424,9 @@ void extendSpace (const std::vector<int>& equationVector, std::vector<mpq_class>
       std::transform (solution.begin(), solution.end(), solutionIngredient.begin(), solution.begin(), std::plus<mpq_class>());
 
       cout << "\n\nAfter "<< i << " iteration" << (i==1 ? ", " : "s, ") << "the solution of the initial value problem at t=" << indQ <<  " is\n";
+
+      // truncation order is the number of terms.
+      // truncation order is also the number of iterations.
 
       for(const auto& [key, value] : myMap)
       {
@@ -588,7 +590,9 @@ void constructAugmentedInitVal(std::vector<mpq_class>& runInitVal, const std::ve
   }
 }
 
-void constructF(std::vector<int>& rowInd, std::vector<int>& colInd, std::vector<mpq_class>& myValue, const std::vector<int>& runVec, const std::map<std::vector<int>, int>& myMap, const std::vector<mpq_class>& myCoeffs, const int stEq)
+
+// The function below constructs 2*F.
+void construct2F(std::vector<int>& rowInd, std::vector<int>& colInd, std::vector<mpq_class>& myValue, const std::vector<int>& runVec, const std::map<std::vector<int>, int>& myMap, const std::vector<mpq_class>& myCoeffs, const int stEq)
 {
   using namespace std;
 
@@ -611,11 +615,11 @@ void constructF(std::vector<int>& rowInd, std::vector<int>& colInd, std::vector<
     colInd.push_back(findPlace(middleAsInd, rightAsInd, myMap.size()));
     if (middleAsInd == rightAsInd)
     {
-      myValue.push_back(myCoeffs[i/(3*stEq)]);
+      myValue.push_back(myCoeffs[i/(3*stEq)]*2);
     }
     else
     {
-      myValue.push_back(myCoeffs[i/(3*stEq)]/2);
+      myValue.push_back(myCoeffs[i/(3*stEq)]);
     }
   }
 
