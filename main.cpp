@@ -11,7 +11,7 @@
 
 void extendSpace (const std::vector<int>& equationVector, std::vector<mpq_class>& myCoeffs, const std::vector<mpq_class>& initVal, const int max_iter = 10);
 void toLatex (const std::vector<int>& equationVector, const int stEq, const std::vector<mpq_class>& myCoeffs);
-void printAsTripleF(const std::vector<int>& rowInd, const std::vector<int>& colInd, const std::vector<mpq_class>& myValue);
+void printAsTriple(const std::vector<int>& rowInd, const std::vector<int>& colInd, const std::vector<mpq_class>& myValue);
 void construct2F(std::vector<int>& rowInd, std::vector<int>& colInd, std::vector<mpq_class>& myValue, const std::vector<int>& runVec, const std::map<std::vector<int>, int>& myMap, const std::vector<mpq_class>& myCoeffs, const int stEq);
 void condensedKroneckerProduct(std::vector<mpq_class>& result, const std::vector<mpq_class>& a, const std::vector<mpq_class>& b);
 void sparseMatTimesVec(std::vector<mpq_class>& result, const std::vector<int>& rowInd, const std::vector<int>& colInd, const std::vector<mpq_class>& myCoeffs, const std::vector<mpq_class>& x);
@@ -284,7 +284,7 @@ void extendSpace (const std::vector<int>& equationVector, std::vector<mpq_class>
     cout << myMapIt->second << " " << runInitVal[myMapIt->second] << '\n';
   }
 
-  cout << "\n" << "Now we will try to construct F: \n";
+  cout << "\n" << "Now we will try to construct 2*F: \n";
 
   vector<int> rowInd;
   vector<int> colInd;
@@ -623,11 +623,11 @@ void construct2F(std::vector<int>& rowInd, std::vector<int>& colInd, std::vector
     }
   }
 
-  printAsTripleF(rowInd, colInd, myValue);
+  printAsTriple(rowInd, colInd, myValue);
   return;
 }
 
-void printAsTripleF(const std::vector<int>& rowInd, const std::vector<int>& colInd, const std::vector<mpq_class>& myValue)
+void printAsTriple(const std::vector<int>& rowInd, const std::vector<int>& colInd, const std::vector<mpq_class>& myValue)
 {
   using namespace std;
 
