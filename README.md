@@ -60,7 +60,7 @@ Quartic anharmonic oscillator
 The Quartic anharmonic oscillator ODE is
 ```math
 \begin{eqnarray}
- \dot{q} &=& \frac{1}{\mu} p
+ \dot{q} &=& \frac{1}{\mu} p \\
  \dot{p} &=& - k_{1} q - k_{2} q^{3}\\
 \end{eqnarray}
 ``` 
@@ -108,9 +108,9 @@ where there are four sought functions.
 The definition
 ```math
 \begin{equation}
- u^{(\ell_{1},\ell_{2},\ell_{3},\ell_{4}))}(t) 
+ u^{(\ell_{1},\ell_{2},\ell_{3},\ell_{4})}(t) 
  \equiv x(t)^{\ell_{1}}p_{x}(t)^{\ell_{2}}y(t)^{\ell_{3}}
-p_{7}(t)^{\ell_{4}} 
+p_{y}(t)^{\ell_{4}} 
 \end{equation}
 ```
 can be used to rewrite in the form
@@ -174,7 +174,6 @@ can be used to rewrite in the form
 ```
 using the heuristic H1 used in beam search for pure quadratization. We will take $\alpha$ and $\gamma$ as 1. After pure quadratization, the ODE set is 
 ```math
-\begin{eqnarray}
   \dot{u}^{(1,0,0)} &=& 1\, u^{(0,0,1)} u^{(0,1,0)} 
   - 1\, u^{(0,0,0)} u^{(0,1,0)} \nonumber\\
   &+& 1\, u^{(1,0,0)} u^{(1,1,0)} 
