@@ -174,6 +174,7 @@ can be used to rewrite in the form
 ```
 using the heuristic H1 used in beam search for pure quadratization. We will take $\alpha$ and $\gamma$ as 1. After pure quadratization, the ODE set is 
 ```math
+\begin{eqnarray}
   \dot{u}^{(1,0,0)} &=& 1\, u^{(0,0,1)} u^{(0,1,0)} 
   - 1\, u^{(0,0,0)} u^{(0,1,0)} \nonumber\\
   &+& 1\, u^{(1,0,0)} u^{(1,1,0)} 
