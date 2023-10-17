@@ -6,7 +6,7 @@ The arithmetic is performed using exact arithmetic (rational numbers), therefore
 
 The systems that are used in the implementation are van der Pol, classical quartic anharmonic oscillator, Henon-Heiles and Rabinovich-Fabrikant. 
 
-The program is compiled with g++ (Ubuntu) 11.3.0 using libraries libgmp 6.2.1 and libgmp C++ bindings. 
+The program is compiled with g++ (Ubuntu) 11.3.0 using libraries libgmp 6.2.1 and libgmp C++ bindings. The program has been tested with GNU compiler g++-10 and above. 
 
 The command to compile is 
 >  g++ -std=c++20 main.cpp -lgmp -lgmpxx -o main.x
