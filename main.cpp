@@ -9,7 +9,7 @@
 #include <cassert>
 #include <chrono>
 
-void extendSpace (const std::vector<int>& equationVector, std::vector<mpq_class>& myCoeffs, const std::vector<mpq_class>& initVal, const int max_iter = 10);
+void extendSpace (const std::vector<int>& equationVector, std::vector<mpq_class>& myCoeffs, const std::vector<mpq_class>& initVal, const int max_iter = 10, const bool newHeuristic = 0);
 void toLatex (const std::vector<int>& equationVector, const int stEq, const std::vector<mpq_class>& myCoeffs);
 void printAsTriple(const std::vector<int>& rowInd, const std::vector<int>& colInd, const std::vector<mpq_class>& myValue);
 void construct2F(std::vector<int>& rowInd, std::vector<int>& colInd, std::vector<mpq_class>& myValue, const std::vector<int>& runVec, const std::map<std::vector<int>, int>& myMap, const std::vector<mpq_class>& myCoeffs, const int stEq);
@@ -23,6 +23,7 @@ int main ()
   using namespace std;
 
   const int max_iter = 50;   // maximum truncation order is one less than max_iter
+  const bool newHeuristic = 1; // if this is true, heuristic H4 is used; otherwise heuristic H1 is used
   const vector<int> vanderPol
   {
     1, 0,  0, 0,  1, 0,
@@ -41,7 +42,7 @@ int main ()
 
   cout << "\n The space extension for van der Pol ODE:";
   cout << '\n';
-  extendSpace (vanderPol, vanderPolCoeffs, vanderPolInitVal, max_iter);
+  extendSpace (vanderPol, vanderPolCoeffs, vanderPolInitVal, max_iter,newHeuristic);
   cout << "--------------------------------\n\n";
 
 
@@ -62,7 +63,7 @@ int main ()
 
   cout << "\n The space extension for classical quartic anharmonic oscillator ODE:";
   cout << '\n';
-  extendSpace (quarticAnharmonicOscillator, quarticAnharmonicOscillatorCoeffs, quarticAnharmonicOscillatorInitVal, max_iter);
+  extendSpace (quarticAnharmonicOscillator, quarticAnharmonicOscillatorCoeffs, quarticAnharmonicOscillatorInitVal, max_iter, newHeuristic);
   cout << "--------------------------------\n\n";
 
   const vector<int> henonHeiles
@@ -86,7 +87,7 @@ int main ()
 
   cout << "\n The space extension for Henon-Heiles ODE:";
   cout << '\n';
-  extendSpace (henonHeiles, henonHeilesCoeffs, henonHeilesInitVal, max_iter);
+  extendSpace (henonHeiles, henonHeilesCoeffs, henonHeilesInitVal, max_iter, newHeuristic);
   cout << "--------------------------------\n\n";
 
 
@@ -114,14 +115,14 @@ int main ()
 
   cout << "\n The space extension for Rabinovich-Fabrikant ODE:";
   cout << '\n';
-  extendSpace (rabinovichFabrikant, rabinovichFabrikantCoeffs, rabinovichFabrikantInitVal, max_iter);
+  extendSpace (rabinovichFabrikant, rabinovichFabrikantCoeffs, rabinovichFabrikantInitVal, max_iter, newHeuristic);
   cout << "--------------------------------\n\n";
 
   return 0;
 }
 
 
-void extendSpace (const std::vector<int>& equationVector, std::vector<mpq_class>& myCoeffs, const std::vector<mpq_class>& initVal, const int max_iter)
+void extendSpace (const std::vector<int>& equationVector, std::vector<mpq_class>& myCoeffs, const std::vector<mpq_class>& initVal, const int max_iter, const bool newHeuristic)
 {
   using namespace std;
   assert(max_iter > 1);
@@ -213,28 +214,55 @@ void extendSpace (const std::vector<int>& equationVector, std::vector<mpq_class>
               continue;
             }
             vector<int> lefts;
-            int oneCount = 0;
-
             for (auto counter = 0; counter < stEq; counter++)
               runVec.push_back (rightHandSide[counter]);
 
-            for (vector<int>::size_type i = 0; i < myTemp.size (); ++i)
+            if (newHeuristic == 0)
             {
-              if (myTemp[i] == 1)
+              int oneCount = 0;
+
+              for (vector<int>::size_type i = 0; i < myTemp.size (); ++i)
               {
-                ++oneCount;
-              }
-              if (myTemp[i] != 1 || (myTemp[i]==1 && (oneCount%2==1)))
-              {
-                lefts.push_back(myTemp[i] / 2);
-                runVec.push_back(myTemp[i] / 2);
-              }
-              else if (myTemp[i]==1 && oneCount%2==0)
-              {
-                lefts.push_back(1);
-                runVec.push_back(1);
+                if (myTemp[i] == 1)
+                {
+                  ++oneCount;
+                }
+                if (myTemp[i] != 1 || (myTemp[i]==1 && (oneCount%2==1)))
+                {
+                  lefts.push_back(myTemp[i] / 2);
+                  runVec.push_back(myTemp[i] / 2);
+                }
+                else if (myTemp[i]==1 && oneCount%2==0)
+                {
+                  lefts.push_back(1);
+                  runVec.push_back(1);
+                }
               }
             }
+            else
+            {
+              int oddCount = 0;
+
+              for (vector<int>::size_type i = 0; i < myTemp.size (); ++i)
+              {
+                if (myTemp[i] % 2 == 1)
+                {
+                  ++oddCount;
+                }
+
+                if (myTemp[i] % 2 == 0 || (myTemp[i] % 2 == 1 && (oddCount%2 == 1)))
+                {
+                  lefts.push_back(myTemp[i] / 2);
+                  runVec.push_back(myTemp[i] / 2);
+                }
+                else if (myTemp[i] % 2 == 1 && oddCount%2 == 0)
+                {
+                  lefts.push_back( (myTemp[i]+1) / 2 );
+                  runVec.push_back( (myTemp[i]+1) / 2 );
+                }
+              }
+            }
+
             for (vector<int>::size_type i = 0; i < lefts.size (); ++i)
             {
               runVec.push_back(myTemp[i] - lefts[i]);

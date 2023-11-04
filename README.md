@@ -40,7 +40,7 @@ can be used to rewrite in the form
   \dot{u}^{(0,1)} &=& \frac{1}{\mu}\, u^{(0,0)} u^{(1,0)} 
 \end{eqnarray}
 ```
-using the heuristic H1 used in beam search for pure quadratization. We will take $\mu$ as 1. After pure quadratization, the ODE set is 
+using the heuristic H4 used in beam search for pure quadratization. We will take $\mu$ as 1. After pure quadratization, the ODE set is 
 ```math
 \begin{eqnarray}
   \dot{u}^{(1,0)} &=& 1\, u^{(0,0)} u^{(1,0)} 
@@ -79,7 +79,7 @@ can be used to rewrite in the form
  &-& k_{2}\, u^{(1,0)} u^{(2,0)}\\
 \end{eqnarray}
 ```
-using the heuristic H1 used in beam search for pure quadratization. We will take $k_{1}$, $k_{2}$ and $\mu$ as 1. After pure quadratization, the ODE set is 
+using the heuristic H4 used in beam search for pure quadratization. We will take $k_{1}$, $k_{2}$ and $\mu$ as 1. After pure quadratization, the ODE set is 
 ```math
 \begin{eqnarray}
   \dot{u}^{(1,0)} &=& 1\, u^{(0,0)} u^{(0,1)}\\
@@ -125,7 +125,7 @@ can be used to rewrite in the form
  &+& \lambda \, u^{(0,0,1,0)} u^{(0,0,1,0)}
 \end{eqnarray}
 ``` 
-using the heuristic H1 used in beam search for pure quadratization. We will take $\lambda$ as 1. After pure quadratization, the ODE set is 
+using the heuristic H4 used in beam search for pure quadratization. We will take $\lambda$ as 1. After pure quadratization, the ODE set is 
 ```math
 \begin{eqnarray}
   \dot{u}^{(1,0,0,0)} &=& 1\, u^{(0,0,0,0)} u^{(0,1,0,0)}\\
@@ -172,39 +172,45 @@ can be used to rewrite in the form
 - 2\, u^{(0,1,0)} u^{(1,0,1)} 
 \end{eqnarray}
 ```
-using the heuristic H1 used in beam search for pure quadratization. We will take $\alpha$ and $\gamma$ as 1. After pure quadratization, the ODE set is 
+using the heuristic H4 used in beam search for pure quadratization. We will take $\alpha$ and $\gamma$ as 1. After pure quadratization, the ODE set is 
 ```math
 \begin{align}
-  \dot{u}^{(1,0,0)} &=  u^{(0,0,1)} u^{(0,1,0)} -  u^{(0,0,0)} u^{(0,1,0)} \\
-  &+  u^{(1,0,0)} u^{(1,1,0)} +  u^{(0,0,0)} u^{(1,0,0)} \\
-  \dot{u}^{(0,1,0)} &= 3 u^{(0,0,1)} u^{(1,0,0)} +  u^{(0,0,0)} u^{(1,0,0)} \\
-  &-  u^{(1,0,0)} u^{(2,0,0)} +  u^{(0,0,0)} u^{(0,1,0)} \\
-  \dot{u}^{(0,0,1)} &= -2 u^{(0,0,0)} u^{(0,0,1)} - 2 u^{(0,1,0)} u^{(1,0,1)} \\
-  \dot{u}^{(0,0,0)} &= 0 \\
-  \dot{u}^{(1,1,0)} &=  u^{(0,1,0)} u^{(0,1,1)} -  u^{(0,1,0)} u^{(0,1,0)}  \\
-  &+  u^{(1,1,0)} u^{(1,1,0)} +  u^{(0,1,0)} u^{(1,0,0)} \\ 
-  &+ 3 u^{(1,0,0)} u^{(1,0,1)} +  u^{(1,0,0)} u^{(1,0,0)}  \\
-  &-  u^{(2,0,0)} u^{(2,0,0)} +  u^{(0,1,0)} u^{(1,0,0)} \\
-  \dot{u}^{(2,0,0)} &= 2 u^{(0,1,0)} u^{(1,0,1)} - 2 u^{(0,1,0)} u^{(1,0,0)} \\
-  &+ 2 u^{(1,0,0)} u^{(2,1,0)} + 2 u^{(1,0,0)} u^{(1,0,0)} \\
-  \dot{u}^{(1,0,1)} &=  u^{(0,0,1)} u^{(0,1,1)} -  u^{(0,0,1)} u^{(0,1,0)} \\
-  &+  u^{(1,0,1)} u^{(1,1,0)} +  u^{(0,0,1)} u^{(1,0,0)} \\
-  &- 2 u^{(0,0,1)} u^{(1,0,0)} - 2 u^{(1,0,1)} u^{(1,1,0)} \\
-  \dot{u}^{(0,1,1)} &= 3 u^{(0,0,1)} u^{(1,0,1)} +  u^{(0,0,1)} u^{(1,0,0)} \\
-  &-  u^{(1,0,0)} u^{(2,0,1)} +  u^{(0,0,1)} u^{(0,1,0)} \\ 
-  &- 2 u^{(0,0,1)} u^{(0,1,0)} - 2 u^{(0,1,1)} u^{(1,1,0)}
+\dot{u}^{(1,0,0)} &= 1\, u^{(0,0,1)} u^{(0,1,0)}  \\
+ &- 1\, u^{(0,0,0)} u^{(0,1,0)}  \\
+ &+ 1\, u^{(1,0,0)} u^{(1,1,0)} \\
+ &+ 1\, u^{(0,0,0)} u^{(1,0,0)}\\
+  \dot{u}^{(0,1,0)} &= 3\, u^{(0,0,1)} u^{(1,0,0)} \\
+ &+ 1\, u^{(0,0,0)} u^{(1,0,0)}  \\
+ &- 1\, u^{(1,0,0)} u^{(2,0,0)}  \\
+ &+ 1\, u^{(0,0,0)} u^{(0,1,0)}\\
+  \dot{u}^{(0,0,1)} &= -2\, u^{(0,0,0)} u^{(0,0,1)}  \\
+ &- 2\, u^{(0,1,0)} u^{(1,0,1)}\\
+  \dot{u}^{(0,0,0)} &= 0
 \end{align}
-```
-```math
 \begin{align}
-  \dot{u}^{(2,1,0)} &= 2 u^{(0,1,1)} u^{(1,1,0)} - 2 u^{(0,1,0)} u^{(1,1,0)} \\
-  &+ 2 u^{(1,1,0)} u^{(2,1,0)} + 2 u^{(1,0,0)} u^{(1,1,0)} \\
-  &+ 3 u^{(1,0,0)} u^{(2,0,1)} +  u^{(1,0,0)} u^{(2,0,0)} \\
-  &-  u^{(2,0,0)} u^{(3,0,0)} +  u^{(1,0,0)} u^{(1,1,0)} \\
-  \dot{u}^{(2,0,1)} &= 2 u^{(0,1,1)} u^{(1,0,1)} - 2 u^{(0,1,0)} u^{(1,0,1)} \\
-  &+ 2 u^{(1,0,1)} u^{(2,1,0)} + 2 u^{(1,0,0)} u^{(1,0,1)} \\
-  &- 2 u^{(1,0,0)} u^{(1,0,1)} - 2 u^{(1,0,1)} u^{(2,1,0)} \\
-  \dot{u}^{(3,0,0)} &= 3 u^{(1,0,1)} u^{(1,1,0)} - 3 u^{(1,0,0)} u^{(1,1,0)} \\
-  &+ 3 u^{(2,0,0)} u^{(2,1,0)} + 3 u^{(1,0,0)} u^{(2,0,0)}
+  \dot{u}^{(1,1,0)} &= 1\, u^{(0,1,0)} u^{(0,1,1)}  \\
+ &- 1\, u^{(0,1,0)} u^{(0,1,0)}  \\
+ &+ 1\, u^{(1,1,0)} u^{(1,1,0)}  \\
+ &+ 1\, u^{(0,1,0)} u^{(1,0,0)}  \\
+ &+ 3\, u^{(1,0,0)} u^{(1,0,1)}  \\
+ &+ 1\, u^{(1,0,0)} u^{(1,0,0)}  \\
+ &- 1\, u^{(2,0,0)} u^{(2,0,0)}  \\
+ &+ 1\, u^{(0,1,0)} u^{(1,0,0)}\\
+  \dot{u}^{(2,0,0)} &= 2\, u^{(0,1,0)} u^{(1,0,1)}  \\
+ &- 2\, u^{(0,1,0)} u^{(1,0,0)}  \\
+ &+ 2\, u^{(1,1,0)} u^{(2,0,0)}  \\
+ &+ 2\, u^{(1,0,0)} u^{(1,0,0)}\\
+  \dot{u}^{(1,0,1)} &= 1\, u^{(0,0,1)} u^{(0,1,1)}  \\
+ &- 1\, u^{(0,0,1)} u^{(0,1,0)}  \\
+ &+ 1\, u^{(1,0,1)} u^{(1,1,0)}  \\
+ &+ 1\, u^{(0,0,1)} u^{(1,0,0)}  \\
+ &- 2\, u^{(0,0,1)} u^{(1,0,0)}  \\
+ &- 2\, u^{(1,0,1)} u^{(1,1,0)}\\
+  \dot{u}^{(0,1,1)} &= 3\, u^{(0,0,1)} u^{(1,0,1)}  \\
+ &+ 1\, u^{(0,0,1)} u^{(1,0,0)}  \\
+ &- 1\, u^{(1,0,1)} u^{(2,0,0)}  \\
+ &+ 1\, u^{(0,0,1)} u^{(0,1,0)}  \\
+ &- 2\, u^{(0,0,1)} u^{(0,1,0)}  \\
+ &- 2\, u^{(0,1,1)} u^{(1,1,0)}
 \end{align}
 ```
